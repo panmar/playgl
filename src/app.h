@@ -6,10 +6,11 @@
 #define GLFW_INCLUDE_GLU
 #include "GLFW/glfw3.h"
 
+#include "camera.h"
 #include "gui.h"
 #include "input.h"
 #include "store.h"
-#include "camera.h"
+#include "timer.h"
 
 void on_key_callback(GLFWwindow *window, i32 key, i32 scancode, i32 action,
                      i32 mods);
@@ -26,7 +27,7 @@ public:
         while (!glfwWindowShouldClose(window)) {
             input.update();
             glfwPollEvents();
-            // timer.tick();
+            timer.tick();
             // logic.update();
             // logic.render()
             // gui.render();
@@ -44,6 +45,7 @@ public:
 
 private:
     GLFWwindow *window = nullptr;
+    Timer timer;
     Input input;
     Store store;
     // Gui gui;
