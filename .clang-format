@@ -1,4 +1,4 @@
-BasedOnStyle: llvm
+BasedOnStyle: Google
 IndentWidth: 4
 AccessModifierOffset: -4
 SortIncludes: false
