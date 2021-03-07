@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+using std::array;
 using std::map;
 using std::set;
 using std::string;

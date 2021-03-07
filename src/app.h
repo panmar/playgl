@@ -24,7 +24,7 @@ public:
         }
 
         while (!glfwWindowShouldClose(window)) {
-            // input.update();
+            input.update();
             glfwPollEvents();
             // timer.tick();
             // logic.update();
@@ -39,12 +39,12 @@ public:
     }
 
     void on_key_changed(i32 key, i32 scancode, i32 action, i32 mods) {
-        printf("on_key_changed(%d)\n", key);
+        input.on_key_changed(key, scancode, action, mods);
     }
 
 private:
     GLFWwindow *window = nullptr;
-    // Input input;
+    Input input;
     Store store;
     // Gui gui;
     // Camera camera;
