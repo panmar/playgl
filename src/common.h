@@ -19,3 +19,11 @@ using u32 = uint32_t;
 using i32 = int32_t;
 using f32 = float;
 using f64 = double;
+
+// NOTE(panmar): Lets use glm for now
+// In future it would be nice to have own math implementation
+
+#include "glm/ext.hpp"
+
+using glm::mat4;
+using glm::vec3;
