@@ -87,8 +87,5 @@ private:
 
 class OrbitCameraController {
 public:
-	void update(PerspectiveCamera* camera, const Input& input) {
-
-	}
+    void update(PerspectiveCamera* camera, const Input& input) {}
 };
-

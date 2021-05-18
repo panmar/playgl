@@ -3,3 +3,5 @@ IndentWidth: 4
 AccessModifierOffset: -4
 SortIncludes: false
 Language: Cpp
+DerivePointerAlignment: false
+PointerAlignment: Left

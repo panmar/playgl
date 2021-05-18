@@ -12,7 +12,7 @@
 #include "store.h"
 #include "timer.h"
 
-void on_key_callback(GLFWwindow *window, i32 key, i32 scancode, i32 action,
+void on_key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action,
                      i32 mods);
 
 class PlayGlApp {
@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    GLFWwindow *window = nullptr;
+    GLFWwindow* window = nullptr;
     Timer timer;
     Input input;
     Store store;
@@ -83,9 +83,9 @@ private:
     void shutdown() {}
 };
 
-inline void on_key_callback(GLFWwindow *window, i32 key, i32 scancode,
+inline void on_key_callback(GLFWwindow* window, i32 key, i32 scancode,
                             i32 action, i32 mods) {
-    auto app = reinterpret_cast<PlayGlApp *>(glfwGetWindowUserPointer);
+    auto app = reinterpret_cast<PlayGlApp*>(glfwGetWindowUserPointer);
     if (app) {
         app->on_key_changed(key, scancode, action, mods);
     }
