@@ -16,7 +16,7 @@ public:
     void update() { prev_keys = keys; }
 
     void on_key_changed(i32 key, i32 scancode, i32 action, i32 mods) {
-        keys[key] = action == GLFW_RELEASE ? GLFW_RELEASE : GLFW_PRESS;
+        keys[key] = (action == GLFW_RELEASE) ? GLFW_RELEASE : GLFW_PRESS;
     }
 
     bool is_key_down(i32 key) const {

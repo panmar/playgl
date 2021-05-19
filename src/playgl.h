@@ -112,7 +112,7 @@ private:
 
 inline void on_key_callback(GLFWwindow* window, i32 key, i32 scancode,
                             i32 action, i32 mods) {
-    auto app = reinterpret_cast<PlayGlApp*>(glfwGetWindowUserPointer);
+    auto app = reinterpret_cast<PlayGlApp*>(glfwGetWindowUserPointer(window));
     if (app) {
         app->on_key_changed(key, scancode, action, mods);
     }
