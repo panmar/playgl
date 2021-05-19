@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glm/vec3.hpp>
+#include <glm/matrix.hpp>
+
 #include "common.h"
 #include "input.h"
 

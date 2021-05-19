@@ -9,27 +9,29 @@
 #include "../common.h"
 #include "../camera.h"
 
-class BasicRenderer {
+class RendererGL2 {
 public:
-    ~BasicRenderer() {}
-
-    void render(const PerspectiveCamera& camera) {
+    static void setup(const Store& store) {
         {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluPerspective(glm::degrees(camera.get_fov()),
-                           camera.get_aspect_ratio(), camera.get_near(),
-                           camera.get_far());
+            gluPerspective(glm::degrees(store.get<f32>("CAMERA_FOV")),
+                           store.get<f32>("CAMERA_ASPECT_RATIO"),
+                           store.get<f32>("CAMERA_NEAR"),
+                           store.get<f32>("CAMERA_FAR"));
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
-            gluLookAt(camera.get_position().x, camera.get_position().y,
-                      camera.get_position().z, camera.get_target().x,
-                      camera.get_target().y, camera.get_target().z,
-                      camera.get_up().x, camera.get_up().y, camera.get_up().z);
+
+            auto camera_position = store.get<glm::vec3>("CAMERA_POSITION");
+            auto camera_target = store.get<glm::vec3>("CAMERA_TARGET");
+            auto camera_up = store.get<glm::vec3>("CAMERA_UP");
+            gluLookAt(camera_position.x, camera_position.y, camera_position.z,
+                      camera_target.x, camera_target.y, camera_target.z,
+                      camera_up.x, camera_up.y, camera_up.z);
         }
 
-
-        glViewport(0, 0, framebuffer_width, framebuffer_height);
+        glViewport(0, 0, store.get<i32>("GRAPHICS_FRAMEBUFFER_WIDTH"),
+                   store.get<i32>("GRAPHICS_FRAMEBUFFER_HEIGHT"));
 
         glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 
@@ -42,11 +44,9 @@ public:
         // }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        render_gizmo(glm::vec3(0.f, 0.f, 0.f));
     }
 
-    void render_gizmo(const glm::vec3& position) {
+    static void render_gizmo(const glm::vec3& position) {
         glBegin(GL_LINES);
 
         auto edge = 1.f;
@@ -69,11 +69,4 @@ public:
 
         glEnd();
     }
-
-    void set_framebuffer_width(i32 value) { framebuffer_width = value; }
-    void set_framebuffer_height(i32 value) { framebuffer_height = value; }
-
-private:
-    i32 framebuffer_width = 0;
-    i32 framebuffer_height = 0;
 };
