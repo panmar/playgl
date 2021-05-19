@@ -77,13 +77,11 @@ private:
             return false;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        Scene::pre_graphics_startup();
 
         window = glfwCreateWindow(Settings::graphics_resolution_width,
                                   Settings::graphics_resolution_height,
-                                  "PlayGL", nullptr, nullptr);
+                                  Settings::window_title, nullptr, nullptr);
 
         store.set(StoreParams::kFrameBufferWidth,
                   Settings::graphics_resolution_width);

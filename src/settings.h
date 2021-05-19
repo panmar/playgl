@@ -4,6 +4,8 @@
 
 namespace Settings {
 
+const char* window_title = "PlayGL";
+
 const u32 graphics_resolution_width = 1920;
 const u32 graphics_resolution_height = 1080;
 const bool graphics_fullscreen = false;

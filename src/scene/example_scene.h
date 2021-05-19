@@ -6,6 +6,10 @@
 
 namespace Scene {
 
+void pre_graphics_startup() {
+    RendererGL2::set_window_hints();
+}
+
 void update(Store& store) {
     f32 elapsed_seconds = store.get<f32>(StoreParams::kTimeElapsedSeconds);
 }
