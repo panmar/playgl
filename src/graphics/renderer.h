@@ -34,8 +34,8 @@ public:
                 store.get<f32>(StoreParams::kCameraFar));
         }
 
-        glViewport(0, 0, store.get<i32>(StoreParams::kFrameBufferWidth),
-                   store.get<i32>(StoreParams::kFrameBufferHeight));
+        glViewport(0, 0, store.get<u32>(StoreParams::kFrameBufferWidth),
+                   store.get<u32>(StoreParams::kFrameBufferHeight));
 
         glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 
