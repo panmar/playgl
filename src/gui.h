@@ -1,3 +1,6 @@
 #pragma once
 
-class Gui {};
+class Gui {
+public:
+    void render() {}
+};

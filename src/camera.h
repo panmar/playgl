@@ -47,9 +47,9 @@ public:
     virtual const mat4& get_projection() const = 0;
 
 private:
-    vec3 position;
-    vec3 target;
-    vec3 up;
+    glm::vec3 position = glm::vec3{1.f, 1.f, 1.f};
+    glm::vec3 target = glm::normalize(glm::vec3{-1.f, -1.f, -1.f});
+    glm::vec3 up = glm::normalize(glm::cross(target, glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
 
     mutable mat4 view;
     mutable bool is_view_valid = false;
