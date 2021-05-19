@@ -9,9 +9,11 @@
 #include "camera.h"
 #include "gui.h"
 #include "input.h"
-#include "scene.h"
+#include "settings.h"
 #include "store.h"
 #include "timer.h"
+
+#include "scene/example_scene.h"
 
 void on_key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action,
                      i32 mods);
@@ -30,24 +32,26 @@ public:
             glfwPollEvents();
 
             timer.tick();
-            store.set("TIME_ELAPSED_SECONDS", timer.get_elapsed_seconds());
+            store.set(StoreParams::kTimeElapsedSeconds,
+                      timer.get_elapsed_seconds());
 
             camera_controller.update(&camera, input);
-            store.set("CAMERA_POSITION", camera.get_position());
-            store.set("CAMERA_TARGET", camera.get_target());
-            store.set("CAMERA_UP", camera.get_up());
-            store.set("CAMERA_VIEW", camera.get_view());
-            store.set("CAMERA_FOV", camera.get_fov());
-            store.set("CAMERA_ASPECT_RATIO", camera.get_aspect_ratio());
-            store.set("CAMERA_NEAR", camera.get_near());
-            store.set("CAMERA_FAR", camera.get_far());
-            store.set("CAMERA_PROJECTION", camera.get_projection());
+            store.set(StoreParams::kCameraPosition, camera.get_position());
+            store.set(StoreParams::kCameraTarget, camera.get_target());
+            store.set(StoreParams::kCameraUp, camera.get_up());
+            store.set(StoreParams::kCameraView, camera.get_view());
+            store.set(StoreParams::kCameraFov, camera.get_fov());
+            store.set(StoreParams::kCameraAspectRatio,
+                      camera.get_aspect_ratio());
+            store.set(StoreParams::kCameraNear, camera.get_near());
+            store.set(StoreParams::kCameraFar, camera.get_far());
+            store.set(StoreParams::kCameraProjection, camera.get_projection());
 
-            scene.update(store);
-            gui.update(store);
+            Scene::update(store);
+            Gui::update(store);
 
-            scene.render(store);
-            gui.render(store);
+            Scene::render(store);
+            Gui::render(store);
 
             glfwSwapBuffers(window);
             std::this_thread::sleep_for(16ms);
@@ -65,10 +69,8 @@ private:
     Timer timer;
     Input input;
     Store store;
-    Gui gui;
     PerspectiveCamera camera;
     OrbitCameraController camera_controller;
-    Scene scene;
 
     bool startup() {
         if (!glfwInit()) {
@@ -79,10 +81,14 @@ private:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        window = glfwCreateWindow(800, 600, "PlayGL", nullptr, nullptr);
+        window = glfwCreateWindow(Settings::graphics_resolution_width,
+                                  Settings::graphics_resolution_height,
+                                  "PlayGL", nullptr, nullptr);
 
-        store.set("GRAPHICS_FRAMEBUFFER_WIDTH", 800);
-        store.set("GRAPHICS_FRAMEBUFFER_HEIGHT", 600);
+        store.set(StoreParams::kFrameBufferWidth,
+                  Settings::graphics_resolution_width);
+        store.set(StoreParams::kFrameBufferHeight,
+                  Settings::graphics_resolution_height);
 
         if (!window) {
             glfwTerminate();

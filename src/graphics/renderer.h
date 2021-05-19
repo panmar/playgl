@@ -6,32 +6,36 @@
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
-#include "../common.h"
-#include "../camera.h"
+#include "common.h"
+#include "camera.h"
 
 class RendererGL2 {
 public:
-    static void setup(const Store& store) {
+    static void begin_frame(const Store& store) {
         {
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            gluPerspective(glm::degrees(store.get<f32>("CAMERA_FOV")),
-                           store.get<f32>("CAMERA_ASPECT_RATIO"),
-                           store.get<f32>("CAMERA_NEAR"),
-                           store.get<f32>("CAMERA_FAR"));
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            auto camera_position = store.get<glm::vec3>("CAMERA_POSITION");
-            auto camera_target = store.get<glm::vec3>("CAMERA_TARGET");
-            auto camera_up = store.get<glm::vec3>("CAMERA_UP");
+            auto camera_position =
+                store.get<glm::vec3>(StoreParams::kCameraPosition);
+            auto camera_target =
+                store.get<glm::vec3>(StoreParams::kCameraTarget);
+            auto camera_up = store.get<glm::vec3>(StoreParams::kCameraUp);
             gluLookAt(camera_position.x, camera_position.y, camera_position.z,
                       camera_target.x, camera_target.y, camera_target.z,
                       camera_up.x, camera_up.y, camera_up.z);
+
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            gluPerspective(
+                glm::degrees(store.get<f32>(StoreParams::kCameraFov)),
+                store.get<f32>(StoreParams::kCameraAspectRatio),
+                store.get<f32>(StoreParams::kCameraNear),
+                store.get<f32>(StoreParams::kCameraFar));
         }
 
-        glViewport(0, 0, store.get<i32>("GRAPHICS_FRAMEBUFFER_WIDTH"),
-                   store.get<i32>("GRAPHICS_FRAMEBUFFER_HEIGHT"));
+        glViewport(0, 0, store.get<i32>(StoreParams::kFrameBufferWidth),
+                   store.get<i32>(StoreParams::kFrameBufferHeight));
 
         glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 

@@ -2,8 +2,7 @@
 
 #include "store.h"
 
-class Gui {
-public:
+namespace Gui {
     void update(Store& store) {}
-    void render(const Store& store) const {}
+    void render(const Store& store) {}
 };
