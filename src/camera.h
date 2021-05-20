@@ -50,7 +50,7 @@ public:
     virtual const mat4& get_projection() const = 0;
 
 private:
-    glm::vec3 position = glm::vec3{1.f, 1.f, 1.f};
+    glm::vec3 position = glm::vec3{10.f, 10.f, 10.f};
     glm::vec3 target = glm::normalize(glm::vec3{-1.f, -1.f, -1.f});
     glm::vec3 up = glm::normalize(glm::cross(target, glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
 
