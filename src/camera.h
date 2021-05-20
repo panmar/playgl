@@ -56,6 +56,7 @@ public:
         glm::mat4 rot(1.f);
         rot = glm::rotateNormalizedAxis(rot, -left_rot, get_left());
         rot = glm::rotateNormalizedAxis(rot, -up_rot, glm::vec3(0.f, 1.f, 0.f));
+
         auto direction = target - position;
         glm::vec3 new_direction = glm::vec4(direction, 0.f) * rot;
         glm::vec3 new_up = glm::vec4(up, 0.f) * rot;
@@ -73,9 +74,10 @@ public:
 
 private:
     glm::vec3 position = glm::vec3{10.f, 10.f, 10.f};
-    glm::vec3 target = glm::normalize(glm::vec3{-1.f, -1.f, -1.f});
-    glm::vec3 up = glm::normalize(
-        glm::cross(target, glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
+    glm::vec3 target = glm::vec3{0.f, 0.f, 0.f};
+    glm::vec3 up =
+        glm::normalize(glm::cross(glm::normalize(target - position),
+                                  glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
 
     mutable mat4 view;
     mutable bool is_view_valid = false;
