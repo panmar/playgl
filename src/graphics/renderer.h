@@ -15,7 +15,7 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     }
 
-    static void begin_frame(const Store& store) {
+    static void begin_frame(const Store& store, bool enable_multisampling = false) {
         {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
@@ -38,8 +38,8 @@ public:
                 store.get<f32>(StoreParams::kCameraFar));
         }
 
-        glViewport(0, 0, store.get<u32>(StoreParams::kFrameBufferWidth),
-                   store.get<u32>(StoreParams::kFrameBufferHeight));
+        glViewport(0, 0, store.get<i32>(StoreParams::kFrameBufferWidth),
+                   store.get<i32>(StoreParams::kFrameBufferHeight));
 
         glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 
@@ -47,7 +47,7 @@ public:
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
 
-        if (Settings::graphics_multisampling) {
+        if (enable_multisampling) {
             glEnable(GL_MULTISAMPLE);
         }
 

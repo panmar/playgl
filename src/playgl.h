@@ -2,18 +2,22 @@
 
 #include <thread>
 
-#include "glad/glad.h"
+#include <glad/glad.h>
 #define GLFW_INCLUDE_GLU
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #include "camera.h"
 #include "gui.h"
 #include "input.h"
-#include "settings.h"
 #include "store.h"
 #include "timer.h"
 
-#include "scene/example_scene.h"
+#include "content.h"
+
+// NOTE(panmar): Those functions should be defined by extending program
+void pgl_init();
+void pgl_update();
+void pgl_render();
 
 void on_key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action,
                      i32 mods);
@@ -27,6 +31,8 @@ class PlayGlApp {
 public:
     void run() {
         using namespace std::literals::chrono_literals;
+
+        pgl_init();
 
         if (!startup()) {
             return;
@@ -48,29 +54,35 @@ public:
             glfwPollEvents();
 
             timer.tick();
-            store.set(StoreParams::kTimeElapsedSeconds,
-                      timer.get_elapsed_seconds());
+            pgl_store().set(StoreParams::kTimeElapsedSeconds,
+                            timer.get_elapsed_seconds());
 
             camera_controller.update(camera, input);
-            store.set(StoreParams::kCameraPosition, camera.get_position());
-            store.set(StoreParams::kCameraTarget, camera.get_target());
-            store.set(StoreParams::kCameraUp, camera.get_up());
-            store.set(StoreParams::kCameraView, camera.get_view());
-            store.set(StoreParams::kCameraFov, camera.get_fov());
-            store.set(StoreParams::kCameraAspectRatio,
-                      camera.get_aspect_ratio());
-            store.set(StoreParams::kCameraNear, camera.get_near());
-            store.set(StoreParams::kCameraFar, camera.get_far());
-            store.set(StoreParams::kCameraProjection, camera.get_projection());
+            {
+                pgl_store().set(StoreParams::kCameraPosition,
+                                camera.get_position());
+                pgl_store().set(StoreParams::kCameraTarget,
+                                camera.get_target());
+                pgl_store().set(StoreParams::kCameraUp, camera.get_up());
+                pgl_store().set(StoreParams::kCameraView, camera.get_view());
+                pgl_store().set(StoreParams::kCameraFov, camera.get_fov());
+                pgl_store().set(StoreParams::kCameraAspectRatio,
+                                camera.get_aspect_ratio());
+                pgl_store().set(StoreParams::kCameraNear, camera.get_near());
+                pgl_store().set(StoreParams::kCameraFar, camera.get_far());
+                pgl_store().set(StoreParams::kCameraProjection,
+                                camera.get_projection());
+            }
 
-            Scene::update(store);
-            Gui::update(store);
+            pgl_update();
+            Gui::update();
 
-            Scene::render(store);
-            Gui::render(store);
+            pgl_render();
+            Gui::render();
 
             glfwSwapBuffers(window);
-            if (input.is_key_pressed(Settings::key_quit)) {
+            if (input.is_key_pressed(
+                    pgl_store().get<i32>(StoreParams::kKeyQuit))) {
                 glfwSetWindowShouldClose(window, true);
             }
 
@@ -99,17 +111,15 @@ public:
     }
 
     void on_framebuffer_resize(u32 width, u32 height) {
+        pgl_store().set(StoreParams::kFrameBufferWidth, width);
+        pgl_store().set(StoreParams::kFrameBufferHeight, height);
         camera.set_aspect_ratio(static_cast<f32>(width) / height);
-
-        store.set(StoreParams::kFrameBufferWidth, width);
-        store.set(StoreParams::kFrameBufferHeight, height);
     }
 
 private:
     GLFWwindow* window = nullptr;
     Timer timer;
     Input input;
-    Store store;
     PerspectiveCamera camera;
     OrbitCameraController camera_controller;
 
@@ -118,16 +128,13 @@ private:
             return false;
         }
 
-        Scene::pre_graphics_startup();
+        pgl_init();
 
-        window = glfwCreateWindow(Settings::graphics_resolution_width,
-                                  Settings::graphics_resolution_height,
-                                  Settings::window_title, nullptr, nullptr);
-
-        store.set(StoreParams::kFrameBufferWidth,
-                  Settings::graphics_resolution_width);
-        store.set(StoreParams::kFrameBufferHeight,
-                  Settings::graphics_resolution_height);
+        window = glfwCreateWindow(
+            pgl_store().get<i32>(StoreParams::kFrameBufferWidth),
+            pgl_store().get<i32>(StoreParams::kFrameBufferHeight),
+            pgl_store().get<string>(StoreParams::kWindowTitle).c_str(), nullptr,
+            nullptr);
 
         if (!window) {
             glfwTerminate();
@@ -147,10 +154,25 @@ private:
         glfwSetMouseButtonCallback(window, ::on_mouse_button_callback);
         glfwSetFramebufferSizeCallback(window, ::on_framebuffer_resize);
 
+        {
+            camera.set_position(
+                pgl_store().get<glm::vec3>(StoreParams::kCameraPosition));
+            camera.set_target(
+                pgl_store().get<glm::vec3>(StoreParams::kCameraTarget));
+            camera.set_up(pgl_store().get<glm::vec3>(StoreParams::kCameraUp));
+            camera.set_aspect_ratio(
+                pgl_store().get<f32>(StoreParams::kCameraAspectRatio));
+            camera.set_fov(pgl_store().get<f32>(StoreParams::kCameraFov));
+            camera.set_near(pgl_store().get<f32>(StoreParams::kCameraNear));
+            camera.set_far(pgl_store().get<f32>(StoreParams::kCameraFar));
+        }
+
         return true;
     }
 
-    void shutdown() {}
+    void shutdown() {
+        glfwTerminate();
+    }
 };
 
 inline void on_key_callback(GLFWwindow* window, i32 key, i32 scancode,
@@ -192,3 +214,11 @@ inline void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height) {
         }
     }
 }
+
+#ifdef PGL_DEFINE_MAIN
+int main() {
+    PlayGlApp app;
+    app.run();
+    return 0;
+}
+#endif

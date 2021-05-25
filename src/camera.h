@@ -2,7 +2,7 @@
 
 #include "common.h"
 #include "input.h"
-#include "settings.h"
+#include "store.h"
 
 class Camera {
 public:
@@ -131,22 +131,13 @@ private:
 class OrbitCameraController {
 public:
     void update(PerspectiveCamera& camera, const Input& input) {
+        auto& store = pgl_store();
+
         auto left_rot = 0.f, up_rot = 0.f;
         auto left_rot_step = 0.1f, up_rot_step = 0.1f;
-        if (input.is_key_down(Settings::key_rotate_left)) {
-            left_rot += left_rot_step;
-        }
-        if (input.is_key_down(Settings::key_rotate_right)) {
-            left_rot -= left_rot_step;
-        }
-        if (input.is_key_down(Settings::key_rotate_up)) {
-            up_rot -= up_rot_step;
-        }
-        if (input.is_key_down(Settings::key_rotate_down)) {
-            up_rot += up_rot_step;
-        }
 
-        if (input.is_mouse_button_down(Settings::key_camera_rotate)) {
+        if (input.is_mouse_button_down(
+                pgl_store().get<i32>(StoreParams::kKeyCameraRotate))) {
             auto mouse_left_rot_step = 0.005f, mouse_up_rot_step = 0.005f;
             left_rot = -(input.cursor_pos_x - input.prev_cursor_pos_x) *
                        mouse_left_rot_step;
@@ -155,28 +146,6 @@ public:
         }
 
         camera.rotate_around_target(up_rot, left_rot);
-
-        if (input.is_key_down(Settings::key_zoom_in)) {
-            auto position = camera.get_position();
-            auto forward = camera.get_forward();
-            auto step = 1.0f;
-            auto new_position = position + forward * step;
-            auto dist = glm::distance(glm::vec3(0.f), new_position);
-            if (dist > min_zoom && dist < max_zoom) {
-                camera.set_position(new_position);
-            }
-        }
-
-        if (input.is_key_down(Settings::key_zoom_out)) {
-            auto position = camera.get_position();
-            auto backward = camera.get_backward();
-            auto step = 1.0f;
-            auto new_position = position + backward * step;
-            auto dist = glm::distance(glm::vec3(0.f), new_position);
-            if (dist > min_zoom && dist < max_zoom) {
-                camera.set_position(new_position);
-            }
-        }
 
         for (auto& step : input.scroll_x_offsets) {
             auto position = camera.get_position();
