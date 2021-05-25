@@ -1,13 +1,12 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-
 #include "glad/glad.h"
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
 #include "common.h"
 #include "camera.h"
+#include "model.h"
 
 class RendererGL2 {
 public:
@@ -106,6 +105,75 @@ public:
         glLineWidth(1.f);
 
         glEnd();
+    }
+
+    static void render_model(const Model& model, f32 scale) {
+        glm::vec4 color{0.1f, 0.1f, 0.1f, 1.f};
+
+        ModelData data = model.data;
+
+        for (auto& node : data.current_model_graph) {
+            auto absolute_transform =
+                data.get_absolute_node_transform(node.name);
+            for (int i = 0; i < node.model_parts.size(); ++i) {
+                auto& model_part = data.model_parts[node.model_parts[i]];
+                // {
+                //     glPolygonMode(GL_FRONT, GL_LINE);
+                //     glColor4f(color.r, color.g, color.b, color.a);
+                //     std::vector<glm::vec4> pos;
+                //     auto world = glm::mat4(1.f);
+                //     world = glm::scale(world, glm::vec3(scale));
+                //     for (auto& p : model_part.positions) {
+                //         auto p4 = world * absolute_transform *
+                //                   glm::vec4(p.x, p.y, p.z, 1.f);
+                //         pos.push_back(p4);
+                //     }
+
+                //     glBegin(GL_TRIANGLES);
+                //     for (auto& i : model_part.indices) {
+                //         glVertex4f(pos[i].x, pos[i].y, pos[i].z, pos[i].w);
+                //     }
+                //     glEnd();
+
+                //     glPolygonMode(GL_FRONT, GL_FILL);
+                // }
+                auto skinning_palette = data.get_skinning_palette(model_part.bones);
+                {
+                    glPolygonMode(GL_FRONT, GL_LINE);
+
+                    glColor4f(color.r, color.g, color.b, color.a);
+                    glm::vec3 light_dir =
+                        glm::normalize(glm::vec3(1.f, 1.f, 1.f));
+                    // glPolygonMode(GL_FRONT, GL_NONE);
+                    glBegin(GL_TRIANGLES);
+                    for (auto& index : model_part.indices) {
+                        auto pos = model_part.positions[index];
+                        auto blend_indices = model_part.joints[index];
+                        auto blend_weights = model_part.weights[index];
+
+                        glm::mat4 xform = skinning_palette[blend_indices.v[0]] *
+                                          blend_weights[0];
+                        xform += skinning_palette[blend_indices.v[1]] *
+                                 blend_weights[1];
+                        xform += skinning_palette[blend_indices.v[2]] *
+                                 blend_weights[2];
+                        xform += skinning_palette[blend_indices.v[3]] *
+                                 blend_weights[3];
+
+                        auto world = glm::mat4(1.f);
+                        world = glm::scale(world, glm::vec3(1.f / scale));
+
+                        glm::vec4 final_pos =
+                            world * xform * glm::vec4(pos, 1.f);
+                        glVertex4f(final_pos.x, final_pos.y, final_pos.z,
+                                   final_pos.w);
+                    }
+                    glEnd();
+
+                    glPolygonMode(GL_FRONT, GL_FILL);
+                }
+            }
+        }
     }
 };
 

@@ -17,11 +17,11 @@
 
 void on_key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action,
                      i32 mods);
-
 void on_scroll_callback(GLFWwindow* window, f64 xoffset, f64 yoffset);
 void on_cursor_position_callback(GLFWwindow* window, f64 x, f64 y);
 void on_mouse_button_callback(GLFWwindow* window, i32 button, i32 action,
                               i32 mods);
+void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height);
 
 class PlayGlApp {
 public:
@@ -30,6 +30,17 @@ public:
 
         if (!startup()) {
             return;
+        }
+
+        // NOTE(panmar): Even if we set glfwSetFramebufferSizeCallback callback
+        // during ::StartUp(), for some reason it is not triggered when
+        // framebuffer is initialized, so, at the beginning, we need to trigger
+        // it manually
+        {
+            i32 framebuffer_width, framebuffer_height;
+            glfwGetFramebufferSize(window, &framebuffer_width,
+                                   &framebuffer_height);
+            on_framebuffer_resize(framebuffer_width, framebuffer_height);
         }
 
         while (!glfwWindowShouldClose(window)) {
@@ -87,6 +98,13 @@ public:
         input.on_mouse_button_changed(key, action, mods);
     }
 
+    void on_framebuffer_resize(u32 width, u32 height) {
+        camera.set_aspect_ratio(static_cast<f32>(width) / height);
+
+        store.set(StoreParams::kFrameBufferWidth, width);
+        store.set(StoreParams::kFrameBufferHeight, height);
+    }
+
 private:
     GLFWwindow* window = nullptr;
     Timer timer;
@@ -127,6 +145,7 @@ private:
         glfwSetScrollCallback(window, ::on_scroll_callback);
         glfwSetCursorPosCallback(window, ::on_cursor_position_callback);
         glfwSetMouseButtonCallback(window, ::on_mouse_button_callback);
+        glfwSetFramebufferSizeCallback(window, ::on_framebuffer_resize);
 
         return true;
     }
@@ -161,5 +180,15 @@ inline void on_mouse_button_callback(GLFWwindow* window, i32 button, i32 action,
     auto app = reinterpret_cast<PlayGlApp*>(glfwGetWindowUserPointer(window));
     if (app) {
         app->on_mouse_button_changed(button, action, mods);
+    }
+}
+
+inline void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height) {
+    auto app = reinterpret_cast<PlayGlApp*>(glfwGetWindowUserPointer(window));
+    if (app) {
+        if (width != 0 && height != 0) {
+            app->on_framebuffer_resize(static_cast<u32>(width),
+                                       static_cast<u32>(height));
+        }
     }
 }

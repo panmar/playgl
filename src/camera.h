@@ -1,10 +1,5 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <glm/matrix.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_normalized_axis.hpp>
-
 #include "common.h"
 #include "input.h"
 #include "settings.h"
@@ -94,6 +89,26 @@ public:
     f32 get_fov() const { return fov; }
     f32 get_near() const { return near; }
     f32 get_far() const { return far; }
+
+    void set_aspect_ratio(f32 value) {
+        aspect_ratio = value;
+        is_valid_projection = false;
+    }
+
+    void set_fov(f32 value) {
+        fov = value;
+        is_valid_projection = false;
+    }
+
+    void set_near(f32 value) {
+        near = value;
+        is_valid_projection = false;
+    }
+
+    void set_far(f32 value) {
+        far = value;
+        is_valid_projection = false;
+    }
 
     const mat4& get_projection() const override {
         if (!is_valid_projection) {
