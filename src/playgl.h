@@ -80,7 +80,9 @@ public:
             pgl_render();
             Gui::render();
 
+            glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);
+
             if (input.is_key_pressed(
                     pgl_store().get<i32>(StoreParams::kKeyQuit))) {
                 glfwSetWindowShouldClose(window, true);
@@ -154,6 +156,10 @@ private:
         glfwSetMouseButtonCallback(window, ::on_mouse_button_callback);
         glfwSetFramebufferSizeCallback(window, ::on_framebuffer_resize);
 
+        if (!Gui::startup(window)) {
+            return false;
+        }
+
         {
             camera.set_position(
                 pgl_store().get<glm::vec3>(StoreParams::kCameraPosition));
@@ -171,6 +177,8 @@ private:
     }
 
     void shutdown() {
+        Gui::shutdown();
+        glfwDestroyWindow(window);
         glfwTerminate();
     }
 };
