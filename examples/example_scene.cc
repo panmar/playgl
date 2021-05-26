@@ -59,5 +59,5 @@ void pgl_render() {
     RendererGL2::render_grid(glm::vec3(0.f, 0.f, 0.f), 10.f,
                              Color(1.f, 1.f, 1.f, 1.f));
 
-    RendererGL2::render_model(MODEL("boy"), 100.f);
+    RendererGL2::render_model(MODEL("boy"));
 };

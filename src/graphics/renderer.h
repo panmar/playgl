@@ -108,7 +108,7 @@ public:
         glEnd();
     }
 
-    static void render_model(const Model& model, f32 scale) {
+    static void render_model(const Model& model) {
         glm::vec4 color{0.1f, 0.1f, 0.1f, 1.f};
 
         ModelData data = model.data;
