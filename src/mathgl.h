@@ -28,3 +28,5 @@ struct vec4u8 {
         u8 v[4];
     };
 };
+
+using Color = glm::vec4;
