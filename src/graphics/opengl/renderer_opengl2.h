@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glad/glad.h"
+#include <glad/glad.h>
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
@@ -15,32 +15,28 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     }
 
-    static void begin_frame(const Store& store,
+    static void begin_frame(const PerspectiveCamera& camera,
                             bool enable_multisampling = false) {
         {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            auto camera_position =
-                store.get<glm::vec3>(StoreParams::kCameraPosition);
-            auto camera_target =
-                store.get<glm::vec3>(StoreParams::kCameraTarget);
-            auto camera_up = store.get<glm::vec3>(StoreParams::kCameraUp);
+            auto camera_position = camera.get_position();
+            auto camera_target = camera.get_target();
+            auto camera_up = camera.get_up();
             gluLookAt(camera_position.x, camera_position.y, camera_position.z,
                       camera_target.x, camera_target.y, camera_target.z,
                       camera_up.x, camera_up.y, camera_up.z);
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluPerspective(
-                glm::degrees(store.get<f32>(StoreParams::kCameraFov)),
-                store.get<f32>(StoreParams::kCameraAspectRatio),
-                store.get<f32>(StoreParams::kCameraNear),
-                store.get<f32>(StoreParams::kCameraFar));
+            gluPerspective(glm::degrees(camera.get_fov()),
+                           camera.get_aspect_ratio(), camera.get_near(),
+                           camera.get_far());
         }
 
-        glViewport(0, 0, store.get<i32>(StoreParams::kFrameBufferWidth),
-                   store.get<i32>(StoreParams::kFrameBufferHeight));
+        glViewport(0, 0, STORE[StoreParams::kFrameBufferWidth],
+                   STORE[StoreParams::kFrameBufferHeight]);
 
         glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 
@@ -183,14 +179,5 @@ public:
         glEnd();
 
         glPolygonMode(GL_FRONT, GL_FILL);
-    }
-};
-
-class RendererGL4 {
-public:
-    static void set_window_hints() {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
 };

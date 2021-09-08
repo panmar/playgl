@@ -8,6 +8,60 @@
 
 #include "common.h"
 
+class StoreParam {
+public:
+    operator i32&() { return std::get<i32>(param); }
+    operator f32&() { return std::get<f32>(param); }
+    operator vec3&() { return std::get<vec3>(param); }
+    operator vec4&() { return std::get<vec4>(param); }
+    operator mat4&() { return std::get<mat4>(param); }
+    operator string&() { return std::get<string>(param); }
+    operator const char*() { return std::get<string>(param).c_str(); }
+
+    template <typename T>
+    StoreParam& operator=(const T& param) {
+        this->param = param;
+        return *this;
+    }
+
+    // NOTE(panmar): To avoid confusion and reduce number of errors
+    // we do store unsigned integers as signed integers;
+    template <>
+    StoreParam& operator=(const u32& param) {
+        this->param = static_cast<i32>(param);
+        return *this;
+    }
+
+private:
+    using ParamType =
+        std::variant<i32, f32, glm::vec3, glm::vec4, glm::mat4, string>;
+    ParamType param;
+};
+
+class Store {
+public:
+    enum class ParamAnnotation { Gui, Shader, ReadOnly };
+
+    StoreParam& operator[](const string& name) {
+        auto it = key_values.find(name);
+        if (it == key_values.end()) {
+            it = key_values.insert({name, StoreParam()}).first;
+        }
+        return it->second;
+    }
+
+private:
+    std::unordered_map<std::string, StoreParam> key_values;
+};
+
+inline Store& pgl_store() {
+    static Store store;
+    return store;
+}
+
+#define STORE pgl_store()
+
+// NOTE(panmar): Build-in store params
 namespace StoreParams {
 
 const string kWindowTitle = "WINDOW_TITLE";
@@ -29,78 +83,13 @@ const string kCameraAspectRatio = "CAMERA_ASPECT_RATIO";
 const string kCameraNear = "CAMERA_NEAR";
 const string kCameraFar = "CAMERA_FAR";
 
-}  // namespace StoreParams
+inline void initialize() {
+    STORE[kWindowTitle] = "PlayGL";
+    STORE[kFrameBufferWidth] = 1920;
+    STORE[kFrameBufferHeight] = 1200;
 
-class Store {
-public:
-    enum class ParamFlag { Gui, Shader, ReadOnly };
-
-    Store() {
-        set(StoreParams::kWindowTitle, "PlayGL");
-        set(StoreParams::kKeyQuit, GLFW_KEY_ESCAPE);
-        set(StoreParams::kKeyCameraRotate, GLFW_MOUSE_BUTTON_RIGHT);
-
-        auto framebuffer_width = 800;
-        auto framebuffer_height = 600;
-
-        set(StoreParams::kFrameBufferWidth, framebuffer_width);
-        set(StoreParams::kFrameBufferHeight, framebuffer_height);
-
-        auto camera_position = glm::vec3{10.f, 10.f, 10.f};
-        auto camera_target = glm::vec3{0.f, 0.f, 0.f};
-        auto camera_up = glm::normalize(
-            glm::cross(glm::normalize(camera_target - camera_position),
-                       glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
-
-        set(StoreParams::kCameraPosition, camera_position);
-        set(StoreParams::kCameraTarget, camera_target);
-        set(StoreParams::kCameraUp, camera_up);
-        set(StoreParams::kCameraFov, 1.1623f);
-        set(StoreParams::kCameraAspectRatio,
-            (static_cast<f32>(framebuffer_width) / framebuffer_height));
-        set(StoreParams::kCameraNear, 0.1f);
-        set(StoreParams::kCameraFar, 100.f);
-    }
-
-    template <class T>
-    void set(const string& key, const T& value) {
-        key_values.insert_or_assign(key, value);
-    }
-
-    // NOTE(panmar): To avoid confusion and reduce number of errors
-    // we do store unsigned integers as signed integers;
-    // When the user stores value as signed int and retrieves the same value
-    // as unsigned int (and vice versa) there will be no errors provided all
-    // parameters fall into signed integer range
-    template <>
-    void set(const string& key, const u32& value) {
-        key_values.insert_or_assign(key, static_cast<i32>(value));
-    }
-
-    template <class T>
-    T get(const string& name) const {
-        auto it = key_values.find(name);
-        if (it == key_values.end()) {
-        }
-        auto& value = it->second;
-        return std::get<T>(value);
-    }
-
-    template <>
-    u32 get(const string& name) const {
-        auto it = key_values.find(name);
-        if (it == key_values.end()) {
-        }
-        auto& value = it->second;
-        return static_cast<u32>(std::get<i32>(value));
-    }
-
-private:
-    using Value = std::variant<i32, f32, glm::vec3, glm::mat4, string>;
-    std::unordered_map<std::string, Value> key_values;
-};
-
-inline Store& pgl_store() {
-    static Store store;
-    return store;
+    STORE[kKeyQuit] = GLFW_KEY_ESCAPE;
+    STORE[kKeyCameraRotate] = GLFW_MOUSE_BUTTON_RIGHT;
 }
+
+}  // namespace StoreParams

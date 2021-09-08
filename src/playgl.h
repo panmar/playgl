@@ -15,9 +15,15 @@
 #include "content.h"
 
 // NOTE(panmar): Those functions should be defined by extending program
-void pgl_init();
-void pgl_update();
-void pgl_render();
+// ---------------------------------
+// Called ONCE before window/graphics setup
+bool pgl_init();
+
+// Called every frame
+void pgl_update(const Timer& timer, const Input& input);
+void pgl_render(const Timer& timer);
+
+// ----------------------------------
 
 void on_key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action,
                      i32 mods);
@@ -31,8 +37,6 @@ class PlayGlApp {
 public:
     void run() {
         using namespace std::literals::chrono_literals;
-
-        pgl_init();
 
         if (!startup()) {
             return;
@@ -54,37 +58,17 @@ public:
             glfwPollEvents();
 
             timer.tick();
-            pgl_store().set(StoreParams::kTimeElapsedSeconds,
-                            timer.get_elapsed_seconds());
 
-            camera_controller.update(camera, input);
-            {
-                pgl_store().set(StoreParams::kCameraPosition,
-                                camera.get_position());
-                pgl_store().set(StoreParams::kCameraTarget,
-                                camera.get_target());
-                pgl_store().set(StoreParams::kCameraUp, camera.get_up());
-                pgl_store().set(StoreParams::kCameraView, camera.get_view());
-                pgl_store().set(StoreParams::kCameraFov, camera.get_fov());
-                pgl_store().set(StoreParams::kCameraAspectRatio,
-                                camera.get_aspect_ratio());
-                pgl_store().set(StoreParams::kCameraNear, camera.get_near());
-                pgl_store().set(StoreParams::kCameraFar, camera.get_far());
-                pgl_store().set(StoreParams::kCameraProjection,
-                                camera.get_projection());
-            }
-
-            pgl_update();
+            pgl_update(timer, input);
             Gui::update();
 
-            pgl_render();
+            pgl_render(timer);
             Gui::render();
 
             glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);
 
-            if (input.is_key_pressed(
-                    pgl_store().get<i32>(StoreParams::kKeyQuit))) {
+            if (input.is_key_pressed(STORE[StoreParams::kKeyQuit])) {
                 glfwSetWindowShouldClose(window, true);
             }
 
@@ -113,30 +97,32 @@ public:
     }
 
     void on_framebuffer_resize(u32 width, u32 height) {
-        pgl_store().set(StoreParams::kFrameBufferWidth, width);
-        pgl_store().set(StoreParams::kFrameBufferHeight, height);
-        camera.set_aspect_ratio(static_cast<f32>(width) / height);
+        STORE[StoreParams::kFrameBufferWidth] = width;
+        STORE[StoreParams::kFrameBufferHeight] = height;
     }
 
 private:
     GLFWwindow* window = nullptr;
     Timer timer;
     Input input;
-    PerspectiveCamera camera;
-    OrbitCameraController camera_controller;
 
     bool startup() {
+        StoreParams::initialize();
+
+        if (!pgl_init()) {
+            return false;
+        }
+
         if (!glfwInit()) {
             return false;
         }
 
         pgl_init();
 
-        window = glfwCreateWindow(
-            pgl_store().get<i32>(StoreParams::kFrameBufferWidth),
-            pgl_store().get<i32>(StoreParams::kFrameBufferHeight),
-            pgl_store().get<string>(StoreParams::kWindowTitle).c_str(), nullptr,
-            nullptr);
+        window = glfwCreateWindow(STORE[StoreParams::kFrameBufferWidth],
+                                  STORE[StoreParams::kFrameBufferHeight],
+                                  STORE[StoreParams::kWindowTitle], nullptr,
+                                  nullptr);
 
         if (!window) {
             glfwTerminate();
@@ -158,19 +144,6 @@ private:
 
         if (!Gui::startup(window)) {
             return false;
-        }
-
-        {
-            camera.set_position(
-                pgl_store().get<glm::vec3>(StoreParams::kCameraPosition));
-            camera.set_target(
-                pgl_store().get<glm::vec3>(StoreParams::kCameraTarget));
-            camera.set_up(pgl_store().get<glm::vec3>(StoreParams::kCameraUp));
-            camera.set_aspect_ratio(
-                pgl_store().get<f32>(StoreParams::kCameraAspectRatio));
-            camera.set_fov(pgl_store().get<f32>(StoreParams::kCameraFov));
-            camera.set_near(pgl_store().get<f32>(StoreParams::kCameraNear));
-            camera.set_far(pgl_store().get<f32>(StoreParams::kCameraFar));
         }
 
         return true;

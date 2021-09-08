@@ -2,14 +2,18 @@
 
 #include "common.h"
 #include "input.h"
+#include "object.h"
 #include "store.h"
 
-class Camera {
+class CameraGeometry : public Object {
 public:
-    Camera() {}
-    Camera(const vec3& position, const vec3& target, const vec3& up)
-        : position(position), target(target), up(up) {}
-    virtual ~Camera() = default;
+    CameraGeometry(const string& id = "") : Object(id) {}
+    CameraGeometry(const vec3& position, const vec3& target, const vec3& up) {
+        this->position = position;
+        this->target = target;
+        this->up = up;
+    }
+    virtual ~CameraGeometry() = default;
 
     vec3 get_position() const { return position; }
     vec3 get_target() const { return target; }
@@ -68,19 +72,19 @@ public:
     }
 
 private:
-    glm::vec3 position = glm::vec3{10.f, 10.f, 10.f};
-    glm::vec3 target = glm::vec3{0.f, 0.f, 0.f};
-    glm::vec3 up =
+    vec3& position = (*this)["position"] = glm::vec3{10.f, 10.f, 10.f};
+    vec3& target = (*this)["target"] = glm::vec3{0.f, 0.f, 0.f};
+    vec3& up = (*this)["up"] =
         glm::normalize(glm::cross(glm::normalize(target - position),
                                   glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
 
-    mutable mat4 view;
     mutable bool is_view_valid = false;
+    mutable mat4 view;
 };
 
-class PerspectiveCamera : public Camera {
+class PerspectiveCamera : public CameraGeometry {
 public:
-    PerspectiveCamera() {}
+    PerspectiveCamera(const string& id = "") : CameraGeometry(id) {}
     PerspectiveCamera(f32 aspect_ratio, f32 fov, f32 near, f32 far)
         : aspect_ratio(aspect_ratio), fov(fov), near(near), far(far) {}
     virtual ~PerspectiveCamera() = default;
@@ -119,25 +123,49 @@ public:
     }
 
 private:
-    f32 aspect_ratio = 1.f;
-    f32 fov = 1.1623f;
-    f32 near = 0.1f;
-    f32 far = 100.f;
+    f32& aspect_ratio = (*this)["aspect_ratio"] = 1.f;
+    f32& fov = (*this)["fov"] = 1.1623f;
+    f32& near = (*this)["near"] = 0.1f;
+    f32& far = (*this)["far"] = 100.f;
 
     mutable mat4 projection;
     mutable bool is_valid_projection = false;
 };
 
-class OrbitCameraController {
+class CameraCanvas : public Object {
 public:
-    void update(PerspectiveCamera& camera, const Input& input) {
-        auto& store = pgl_store();
+    CameraCanvas(const string& id="") : Object(id) {}
+    PROPERTY(i32, width) = 1920;
+    PROPERTY(i32, height) = 1200;
+    PROPERTY(Color, color) = Color(0.5f, 0.5f, 0.5f, 1.f);
+    // Texture
+};
+
+struct Camera {
+    CameraCanvas canvas;
+    PerspectiveCamera geometry;
+};
+
+class OrbitCameraController : public Object {
+public:
+    OrbitCameraController(const string& id="") : Object(id) {}
+
+    void update(Camera& camera, const Input& input) {
+        CameraCanvas& camera_canvas = camera.canvas;
+        PerspectiveCamera& camera_geometry = camera.geometry;
+
+        i32 framebuffer_width = STORE[StoreParams::kFrameBufferWidth];
+        i32 framebuffer_height = STORE[StoreParams::kFrameBufferHeight];
+        f32 aspect_ratio =
+            framebuffer_width / static_cast<f32>(framebuffer_height);
+        camera_canvas.width = framebuffer_width;
+        camera_canvas.height = framebuffer_height;
+        camera_geometry.set_aspect_ratio(aspect_ratio);
 
         auto left_rot = 0.f, up_rot = 0.f;
         auto left_rot_step = 0.1f, up_rot_step = 0.1f;
 
-        if (input.is_mouse_button_down(
-                pgl_store().get<i32>(StoreParams::kKeyCameraRotate))) {
+        if (input.is_mouse_button_down(STORE[StoreParams::kKeyCameraRotate])) {
             auto mouse_left_rot_step = 0.005f, mouse_up_rot_step = 0.005f;
             left_rot = -(input.cursor_pos_x - input.prev_cursor_pos_x) *
                        mouse_left_rot_step;
@@ -145,29 +173,29 @@ public:
                      mouse_up_rot_step;
         }
 
-        camera.rotate_around_target(up_rot, left_rot);
+        camera_geometry.rotate_around_target(up_rot, left_rot);
 
         for (auto& step : input.scroll_x_offsets) {
-            auto position = camera.get_position();
-            auto forward = camera.get_position();
+            auto position = camera_geometry.get_position();
+            auto forward = camera_geometry.get_position();
             auto new_position = position + forward * -step;
             auto dist = glm::distance(glm::vec3(0.f), new_position);
             if (dist > min_zoom && dist < max_zoom) {
-                camera.set_position(new_position);
+                camera_geometry.set_position(new_position);
             }
         }
 
         for (auto& step : input.scroll_y_offsets) {
-            auto position = camera.get_position();
-            auto backward = camera.get_backward();
+            auto position = camera_geometry.get_position();
+            auto backward = camera_geometry.get_backward();
             auto new_position = position + backward * -step;
             auto dist = glm::distance(glm::vec3(0.f), new_position);
             if (dist > min_zoom && dist < max_zoom) {
-                camera.set_position(new_position);
+                camera_geometry.set_position(new_position);
             }
         }
     }
 
-    const f32 min_zoom = 0.1f;
-    const f32 max_zoom = 50.f;
+    PROPERTY(f32, min_zoom) = 0.1f;
+    PROPERTY(f32, max_zoom) = 50.f;
 };

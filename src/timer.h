@@ -6,6 +6,8 @@
 
 class Timer {
 public:
+    Timer() {}
+
     void tick() {
         auto tick = std::chrono::high_resolution_clock::now();
         std::chrono::duration<f32> diff = tick - prev_tick;
@@ -13,10 +15,9 @@ public:
         prev_tick = tick;
     }
 
-    f32 get_elapsed_seconds() const { return elapsed_seconds; }
+    f32 elapsed_seconds = 0.f;
 
 private:
     std::chrono::high_resolution_clock::time_point prev_tick =
         std::chrono::high_resolution_clock::now();
-    f32 elapsed_seconds = 0.f;
 };

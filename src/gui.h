@@ -6,7 +6,7 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl2.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 #include "store.h"
 
@@ -23,7 +23,7 @@ bool startup(GLFWwindow* window) {
         return false;
     }
 
-    if (!ImGui_ImplOpenGL2_Init()) {
+    if (!ImGui_ImplOpenGL3_Init()) {
         return false;
     }
 
@@ -33,31 +33,31 @@ bool startup(GLFWwindow* window) {
 void update() {}
 
 void render() {
-    ImGui_ImplOpenGL2_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     {
         ImGui::Begin("Camera");
 
-        auto camera_position =
-            pgl_store().get<vec3>(StoreParams::kCameraPosition);
-        auto camera_target = pgl_store().get<vec3>(StoreParams::kCameraTarget);
-        auto camera_up = pgl_store().get<vec3>(StoreParams::kCameraUp);
-        ImGui::InputFloat3("Position", &camera_position.x, 2);
-        ImGui::InputFloat3("Target", &camera_target.x, 2);
-        ImGui::InputFloat3("Up", &camera_up.x, 2);
+        // vec3 camera_position =
+        //     STORE[StoreParams::kCameraPosition];
+        // vec3 camera_target = STORE[StoreParams::kCameraTarget];
+        // vec3 camera_up = STORE[StoreParams::kCameraUp];
+        // ImGui::InputFloat3("Position", &camera_position.x);
+        // ImGui::InputFloat3("Target", &camera_target.x);
+        // ImGui::InputFloat3("Up", &camera_up.x);
 
         ImGui::End();
     }
 
     ImGui::Render();
 
-    ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void shutdown() {
-    ImGui_ImplOpenGL2_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
