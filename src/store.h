@@ -10,6 +10,8 @@
 
 class StoreParam {
 public:
+    enum class ParamAnnotation { Gui, Shader, ReadOnly };
+
     operator i32&() { return std::get<i32>(param); }
     operator f32&() { return std::get<f32>(param); }
     operator vec3&() { return std::get<vec3>(param); }
@@ -36,12 +38,11 @@ private:
     using ParamType =
         std::variant<i32, f32, glm::vec3, glm::vec4, glm::mat4, string>;
     ParamType param;
+    u32 annotations;
 };
 
 class Store {
 public:
-    enum class ParamAnnotation { Gui, Shader, ReadOnly };
-
     StoreParam& operator[](const string& name) {
         auto it = key_values.find(name);
         if (it == key_values.end()) {

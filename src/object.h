@@ -32,7 +32,7 @@ protected:
 private:
     static std::string generate_id() {
         static int64_t id = 1;
-        return "__id_" + std::to_string(id++) + "__";
+        return fmt::format("__id:{}__", id++);
     }
 };
 

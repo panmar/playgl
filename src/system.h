@@ -4,12 +4,14 @@
 
 #include "common.h"
 
-inline string read_file(const string& filepath) {
+inline string read_file(const std::filesystem::path& filepath) {
     auto file = std::unique_ptr<FILE, int (*)(FILE*)>{
-        fopen(filepath.c_str(), "r"), &fclose};
+        fopen(filepath.string().c_str(), "r"), &fclose};
 
     if (!file) {
-        throw std::runtime_error("File " + filepath + "could not be opened");
+        string error =
+            fmt::format("File {} could not be opened", filepath.string());
+        throw std::runtime_error(error);
     }
 
     fseek(file.get(), 0, SEEK_END);

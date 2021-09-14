@@ -11,13 +11,14 @@
 
 class AssimpModelImporter {
 public:
-    ModelData import(const string& model_path) {
+    ModelData import(const std::filesystem::path& model_path) {
         ModelData model;
 
         scene = importer.ReadFile(
-            model_path, aiProcess_Triangulate | aiProcess_LimitBoneWeights |
-                            aiProcess_JoinIdenticalVertices |
-                            aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+            model_path.string(),
+            aiProcess_Triangulate | aiProcess_LimitBoneWeights |
+                aiProcess_JoinIdenticalVertices | aiProcess_GenSmoothNormals |
+                aiProcess_FlipUVs);
 
         if (!scene) {
             throw std::runtime_error(

@@ -13,11 +13,13 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 using std::array;
 using std::map;
 using std::unordered_map;
+using std::unordered_set;
 using std::set;
 using std::string;
 using std::vector;
