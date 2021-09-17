@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "common.h"
+#include "graphics/opengl/texture.h"
 #include "resource.h"
 #include "system.h"
 
@@ -134,6 +135,16 @@ public:
         if (location != -1) {
             bind();
             glUniformMatrix4fv(location, 1, GL_TRUE, &value[0][0]);
+        }
+        return *this;
+    }
+
+    const Shader& param(const char* name, const Texture& texture) const {
+        auto location = glGetUniformLocation(resource(), name);
+        if (location != -1) {
+            bind();
+            param(name, 0);
+            texture.bind();
         }
         return *this;
     }

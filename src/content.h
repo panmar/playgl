@@ -4,6 +4,7 @@
 #include "system.h"
 #include "model.h"
 #include "model_importer.h"
+#include "graphics/opengl/texture.h"
 #include "graphics/opengl/shader.h"
 
 class Content {
@@ -38,8 +39,7 @@ public:
         }
 
         model->data = importer.import(*path_it);
-        id_to_models.insert({id, std::move(model)});
-        return *(id_to_models.find(id)->second.get());
+        return *(id_to_models.insert({id, std::move(model)}).first->second.get());
     }
 
     Shader& shader(const string& vs_id, const string& fs_id) {
@@ -73,19 +73,37 @@ public:
         }
 
         auto shader = Shader::from_file(*vs_path_it, *fs_path_it);
-        id_to_shaders.insert({id, std::move(shader)});
-        return id_to_shaders.find(id)->second;
+        return id_to_shaders.insert({id, std::move(shader)}).first->second;
     }
 
     Shader& shader(const string& id) { return shader(id, id); }
 
-    // Texture& texture(const string& name) {
-    //     static unordered_map<string, unique_ptr<Texture>> textures;
-    // }
+    Texture& texture(const string& id) {
+        auto it = id_to_textures.find(id);
+        if (it != id_to_textures.end()) {
+            return it->second;
+        }
+
+        auto path_it =
+            std::find_if(resource_filepaths.begin(), resource_filepaths.end(),
+                         [&id](const std::filesystem::path& p) {
+                             return id == p.filename();
+                         });
+
+        if (path_it == resource_filepaths.end()) {
+            string error = fmt::format("Cannot find resource {}", id);
+            throw std::runtime_error(error);
+        }
+
+        return id_to_textures
+            .insert({id, std::move(Texture::from_file(*path_it))})
+            .first->second;
+    }
 
 private:
     vector<std::filesystem::path> resource_filepaths;
 
     unordered_map<string, unique_ptr<Model>> id_to_models;
     unordered_map<string, Shader> id_to_shaders;
+    unordered_map<string, Texture> id_to_textures;
 };

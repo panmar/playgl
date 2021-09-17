@@ -67,7 +67,7 @@ struct Triangle : public Geometry {
             {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 0.0f}};
         normals = {
             {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 0.0f}};
-        texcoords = {{-0.5f, -0.5f}, {0.5f, -0.5f}, {0.0f, 0.5f}};
+        texcoords = {{1.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 1.0f}};
     };
 };
 
