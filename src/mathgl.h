@@ -33,3 +33,11 @@ struct vec4u8 {
 };
 
 using Color = glm::vec4;
+
+namespace Colors {
+    const Color Black = Color{0.f, 0.f, 0.f, 1.f};
+    const Color White = Color{1.f, 1.f, 1.f, 1.f};
+    const Color Red = Color{1.f, 0.f, 0.f, 1.f};
+    const Color Green = Color{0.f, 1.f, 0.f, 1.f};
+    const Color Blue = Color{0.f, 0.f, 1.f, 1.f};
+}

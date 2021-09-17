@@ -5,9 +5,10 @@ pushd .\bin
 
 cl /MD /std:c++17 ^
 	/EHsc /Zi ^
+	/wd4005 ^
 	/I"..\src" /I"..\libs" ^
 	/DGLFW_EXPOSE_NATIVE_WIN32 ^
-	..\examples\example_gl2.cc ^
+	..\examples\example.cc ^
     ..\libs\glad.cc ^
 	..\libs\fmt\format.cc ^
 	..\libs\imgui\imgui.cpp ^

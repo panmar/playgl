@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "camera.h"
+#include "graphics.h"
 #include "gui.h"
 #include "input.h"
 #include "store.h"
@@ -14,14 +15,46 @@
 
 #include "content.h"
 
+struct System {
+    Timer timer;
+    Input input;
+    Store store;
+    Content content = Content(std::filesystem::path{"data/"});
+
+    Camera camera;
+    OrbitCameraController camera_controller;
+
+    GeometryRenderer geometry_renderer;
+    debug::DebugRenderer debug_renderer{geometry_renderer};
+};
+
+struct SystemRef {
+    static SystemRef from(System& system) {
+        return SystemRef{system.timer,         system.input,
+                         system.content,       system.store,
+                         system.camera,        system.geometry_renderer,
+                         system.debug_renderer};
+    }
+
+    const Timer& timer;
+    const Input& input;
+    Content& content;
+    Store& store;
+
+    const Camera& camera;
+
+    GeometryRenderer& geometry;
+    debug::DebugRenderer& debug;
+};
+
 // NOTE(panmar): Those functions should be defined by extending program
 // ---------------------------------
 // Called ONCE before window/graphics setup
 bool pgl_init();
 
 // Called every frame
-void pgl_update(const Timer& timer, const Input& input);
-void pgl_render(const Timer& timer);
+void pgl_update(SystemRef& system);
+void pgl_render(SystemRef& system);
 
 // ----------------------------------
 
@@ -54,21 +87,26 @@ public:
         }
 
         while (!glfwWindowShouldClose(window)) {
-            input.update();
+            system.input.update();
             glfwPollEvents();
 
-            timer.tick();
+            system.timer.tick();
+            system.debug_renderer.clear_ephemerals();
+            system.camera_controller.update(system.camera, system.input);
 
-            pgl_update(timer, input);
+            pgl_update(SystemRef::from(system));
             Gui::update();
 
-            pgl_render(timer);
+            frame_rendering_setup(system.camera, true);
+            pgl_render(SystemRef::from(system));
+            system.debug_renderer.render(system.camera);
             Gui::render();
 
             glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);
 
-            if (input.is_key_pressed(STORE[StoreParams::kKeyQuit])) {
+            if (system.input.is_key_pressed(
+                    system.store[StoreParams::kKeyQuit])) {
                 glfwSetWindowShouldClose(window, true);
             }
 
@@ -79,35 +117,52 @@ public:
     }
 
     void on_key_changed(i32 key, i32 scancode, i32 action, i32 mods) {
-        input.on_key_changed(key, scancode, action, mods);
+        system.input.on_key_changed(key, scancode, action, mods);
     }
 
     void on_scroll(f64 x_offset, f64 y_offset) {
-        input.scroll_x_offsets.push_back(x_offset);
-        input.scroll_y_offsets.push_back(y_offset);
+        system.input.scroll_x_offsets.push_back(x_offset);
+        system.input.scroll_y_offsets.push_back(y_offset);
     }
 
     void on_cursor_position(f64 x, f64 y) {
-        input.cursor_pos_x = x;
-        input.cursor_pos_y = y;
+        system.input.cursor_pos_x = x;
+        system.input.cursor_pos_y = y;
     }
 
     void on_mouse_button_changed(i32 key, i32 action, i32 mods) {
-        input.on_mouse_button_changed(key, action, mods);
+        system.input.on_mouse_button_changed(key, action, mods);
     }
 
     void on_framebuffer_resize(u32 width, u32 height) {
-        STORE[StoreParams::kFrameBufferWidth] = width;
-        STORE[StoreParams::kFrameBufferHeight] = height;
+        if (!width || !height) {
+            return;
+        }
+
+        system.store[StoreParams::kFrameBufferWidth] = width;
+        system.store[StoreParams::kFrameBufferHeight] = height;
+
+        system.camera.canvas.width = width;
+        system.camera.canvas.height = height;
+        system.camera.geometry.set_aspect_ratio(width /
+                                                static_cast<f32>(height));
     }
 
 private:
     GLFWwindow* window = nullptr;
-    Timer timer;
-    Input input;
+    System system;
 
     bool startup() {
-        StoreParams::initialize();
+        // Store initialization
+        {
+            Store& store = system.store;
+            store[StoreParams::kWindowTitle] = "PlayGL";
+            store[StoreParams::kFrameBufferWidth] = 1920;
+            store[StoreParams::kFrameBufferHeight] = 1200;
+
+            store[StoreParams::kKeyQuit] = GLFW_KEY_ESCAPE;
+            store[StoreParams::kKeyCameraRotate] = GLFW_MOUSE_BUTTON_RIGHT;
+        }
 
         if (!pgl_init()) {
             return false;
@@ -117,12 +172,18 @@ private:
             return false;
         }
 
+        {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+        }
         pgl_init();
 
-        window = glfwCreateWindow(STORE[StoreParams::kFrameBufferWidth],
-                                  STORE[StoreParams::kFrameBufferHeight],
-                                  STORE[StoreParams::kWindowTitle], nullptr,
-                                  nullptr);
+        window = glfwCreateWindow(system.store[StoreParams::kFrameBufferWidth],
+                                  system.store[StoreParams::kFrameBufferHeight],
+                                  system.store[StoreParams::kWindowTitle],
+                                  nullptr, nullptr);
 
         if (!window) {
             glfwTerminate();
@@ -134,6 +195,8 @@ private:
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             return false;
         }
+
+        debug::setup_logging();
 
         glfwSetWindowUserPointer(window, this);
         glfwSetKeyCallback(window, on_key_callback);

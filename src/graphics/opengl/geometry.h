@@ -7,56 +7,68 @@
 #include <GLFW/glfw3.h>
 
 struct Geometry {
+    enum class Topology { Triangles = GL_TRIANGLES, Lines = GL_LINES };
+
     vector<vec3> positions;
     vector<vec3> normals;
     vector<vec2> texcoords;
+
+    Topology topology = Topology::Triangles;
+    u32 vertex_start_index = 0;
+    u32 vertex_count = 0;
 };
 
-class GpuData {
-public:
-    ~GpuData() { clean(); }
+namespace geometry {
 
-    void create(const Geometry& geometry) {
-        clean();
+struct Grid : public Geometry {
+    Grid() {
+        topology = Topology::Lines;
+        vertex_count = 20;
 
-        vector<vec3> merged_geometry_data;
-        // TODO(panmar): Fill the data
-
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER,
-                     2 * sizeof(vec3) * geometry.positions.size(),
-                     merged_geometry_data.data(), GL_STATIC_DRAW);
-
-        // NOTE(panmar): This part is about the expected shader layout
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(f32), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(f32),
-                              (void*)(3 * sizeof(f32)));
+        // clang-format off
+        positions = {
+                {-1.f, 0.f, -1.f}, {-1.f, 0.f, 1.f},
+                {-0.5f, 0.f, -1.f}, {-0.5f, 0.f, 1.f},
+                {0.f, 0.f, -1.f}, {0.f, 0.f, 1.f},
+                {0.5f, 0.f, -1.f}, {0.5f, 0.f, 1.f},
+                {1.f, 0.f, -1.f}, {1.f, 0.f, 1.0f},
+                
+                {-1.f, 0.f, -1.f}, {1.f, 0.f, -1.f},
+                {-1.f, 0.f, -0.5f}, {1.f, 0.f, -0.5f},
+                {-1.f, 0.f, 0.f}, {1.f, 0.f, 0.f},
+                {-1.f, 0.f, 0.5f}, {1.f, 0.f, 0.5f},
+                {-1.f, 0.f, 1.f}, {1.f, 0.f, 1.0f}
+            };
+        // clang-format on
     }
-
-    void bind() {
-        assert(vao != 0);
-        glBindVertexArray(vao);
-    }
-
-    void unbind() { glBindVertexArray(0); }
-
-private:
-    void clean() {
-        if (vao) {
-            glDeleteVertexArrays(1, &vao);
-        }
-
-        if (vbo) {
-            glDeleteBuffers(1, &vbo);
-        }
-    }
-
-    u32 vbo = 0;
-    u32 vao = 0;
 };
+
+struct Gizmo : public Geometry {
+    Gizmo() {
+        topology = Topology::Lines;
+        vertex_count = 6;
+
+        // clang-format off
+        positions = {
+                {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f},
+                {0.f, 1.f, 0.f}, {0.f, 0.f, 0.f},
+                {0.f, 0.f, 1.f}, {0.f, 0.f, 0.f},
+            };
+        // clang-format on
+    }
+};
+
+struct Triangle : public Geometry {
+    Triangle() {
+        topology = Topology::Triangles;
+        vertex_count = 3;
+
+        positions = {
+            {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 0.0f}};
+        normals = {
+            {-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 0.0f}};
+        texcoords = {{-0.5f, -0.5f}, {0.5f, -0.5f}, {0.0f, 0.5f}};
+    };
+};
+
+}  // namespace geometry

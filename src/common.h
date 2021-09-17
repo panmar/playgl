@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <assert.h>
 #include <cstdint>
@@ -25,6 +26,8 @@ using std::string;
 using std::vector;
 
 using std::unique_ptr;
+
+using Path = std::filesystem::path;
 
 using i8 = int8_t;
 using u8 = uint8_t;

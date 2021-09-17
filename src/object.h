@@ -21,7 +21,9 @@ public:
             return local_store[name];
         }
         auto full_name = id + "." + name;
-        return STORE[full_name];
+        // TODO(panmar): Uncomment me, when store injection working
+        // return STORE[full_name];
+        return local_store[name];
     }
 
     const std::string id;

@@ -6,54 +6,86 @@
 #include "model_importer.h"
 #include "graphics/opengl/shader.h"
 
-namespace Content {
-
-const std::filesystem::path data_dir = "data/";
-const std::filesystem::path model_dir = "models/";
-const std::filesystem::path shaders_dir = "shaders/";
-
-Model& model(const string& name) {
-    static unordered_map<string, unique_ptr<Model>> models;
-
-    auto it = models.find(name);
-    if (it != models.end()) {
-        return *(it->second.get());
+class Content {
+public:
+    Content(std::filesystem::path& data_dir) {
+        for (const auto& entry :
+             std::filesystem::recursive_directory_iterator{data_dir}) {
+            if (entry.is_regular_file()) {
+                resource_filepaths.push_back(entry.path());
+            }
+        }
     }
 
-    AssimpModelImporter importer;
-    auto model = std::make_unique<Model>();
+    Model& model(const string& id) {
+        auto it = id_to_models.find(id);
+        if (it != id_to_models.end()) {
+            return *(it->second.get());
+        }
 
-    auto path = data_dir / model_dir / (name + ".fbx");
+        AssimpModelImporter importer;
+        auto model = std::make_unique<Model>();
 
-    model->data = importer.import(path);
-    models.insert({name, std::move(model)});
-    return *(models.find(name)->second.get());
-}
+        auto path_it =
+            std::find_if(resource_filepaths.begin(), resource_filepaths.end(),
+                         [&id](const std::filesystem::path& p) {
+                             return id == p.filename();
+                         });
 
-Shader& shader(const string& vs_name, const string& fs_name) {
-    static unordered_map<string, unique_ptr<Shader>> shaders;
+        if (path_it == resource_filepaths.end()) {
+            string error = fmt::format("Cannot find resource {}", id);
+            throw std::runtime_error(error);
+        }
 
-    auto name = vs_name + "+" + fs_name;
-
-    auto it = shaders.find(name);
-    if (it != shaders.end()) {
-        return *(it->second.get());
+        model->data = importer.import(*path_it);
+        id_to_models.insert({id, std::move(model)});
+        return *(id_to_models.find(id)->second.get());
     }
 
-    string vs = read_file(data_dir / shaders_dir / vs_name);
-    string fs = read_file(data_dir / shaders_dir / fs_name);
+    Shader& shader(const string& vs_id, const string& fs_id) {
+        auto id = vs_id + "+" + fs_id;
 
-    auto shader = std::make_unique<Shader>(vs, fs);
-    shaders.insert({name, std::move(shader)});
-    return *(shaders.find(name)->second.get());
-}
+        auto it = id_to_shaders.find(id);
+        if (it != id_to_shaders.end()) {
+            return it->second;
+        }
 
-// Texture& texture(const string& name) {
-// static unordered_map<string, unique_ptr<Texture>> textures;
-//}
+        auto vs_path_it =
+            std::find_if(resource_filepaths.begin(), resource_filepaths.end(),
+                         [&vs_id](const std::filesystem::path& p) {
+                             return vs_id == p.filename();
+                         });
 
-}  // namespace Content
+        if (vs_path_it == resource_filepaths.end()) {
+            string error = fmt::format("Cannot find resource {}", vs_id);
+            throw std::runtime_error(error);
+        }
 
-#define MODEL(path) Content::model((path))
-#define SHADER(vs_path, fs_path) Content::shader((vs_name), (fs_name))
-// #define TEXTURE(str) Content::texture((str))
+        auto fs_path_it =
+            std::find_if(resource_filepaths.begin(), resource_filepaths.end(),
+                         [&fs_id](const std::filesystem::path& p) {
+                             return fs_id == p.filename();
+                         });
+
+        if (fs_path_it == resource_filepaths.end()) {
+            string error = fmt::format("Cannot find resource {}", fs_id);
+            throw std::runtime_error(error);
+        }
+
+        auto shader = Shader::from_file(*vs_path_it, *fs_path_it);
+        id_to_shaders.insert({id, std::move(shader)});
+        return id_to_shaders.find(id)->second;
+    }
+
+    Shader& shader(const string& id) { return shader(id, id); }
+
+    // Texture& texture(const string& name) {
+    //     static unordered_map<string, unique_ptr<Texture>> textures;
+    // }
+
+private:
+    vector<std::filesystem::path> resource_filepaths;
+
+    unordered_map<string, unique_ptr<Model>> id_to_models;
+    unordered_map<string, Shader> id_to_shaders;
+};

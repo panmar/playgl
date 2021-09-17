@@ -2,12 +2,10 @@
 
 #include "common.h"
 #include "input.h"
-#include "object.h"
-#include "store.h"
 
-class CameraGeometry : public Object {
+class CameraGeometry {
 public:
-    CameraGeometry(const string& id = "") : Object(id) {}
+    CameraGeometry() = default;
     CameraGeometry(const vec3& position, const vec3& target, const vec3& up) {
         this->position = position;
         this->target = target;
@@ -72,9 +70,9 @@ public:
     }
 
 private:
-    vec3& position = (*this)["position"] = glm::vec3{10.f, 10.f, 10.f};
-    vec3& target = (*this)["target"] = glm::vec3{0.f, 0.f, 0.f};
-    vec3& up = (*this)["up"] =
+    vec3 position = glm::vec3{10.f, 10.f, 10.f};
+    vec3 target = glm::vec3{0.f, 0.f, 0.f};
+    vec3 up =
         glm::normalize(glm::cross(glm::normalize(target - position),
                                   glm::normalize(glm::vec3{1.f, 2.f, 3.f})));
 
@@ -84,7 +82,7 @@ private:
 
 class PerspectiveCamera : public CameraGeometry {
 public:
-    PerspectiveCamera(const string& id = "") : CameraGeometry(id) {}
+    PerspectiveCamera() = default;
     PerspectiveCamera(f32 aspect_ratio, f32 fov, f32 near, f32 far)
         : aspect_ratio(aspect_ratio), fov(fov), near(near), far(far) {}
     virtual ~PerspectiveCamera() = default;
@@ -123,21 +121,20 @@ public:
     }
 
 private:
-    f32& aspect_ratio = (*this)["aspect_ratio"] = 1.f;
-    f32& fov = (*this)["fov"] = 1.1623f;
-    f32& near = (*this)["near"] = 0.1f;
-    f32& far = (*this)["far"] = 100.f;
+    f32 aspect_ratio = 1.f;
+    f32 fov = 1.1623f;
+    f32 near = 0.1f;
+    f32 far = 100.f;
 
     mutable mat4 projection;
     mutable bool is_valid_projection = false;
 };
 
-class CameraCanvas : public Object {
+class CameraCanvas {
 public:
-    CameraCanvas(const string& id="") : Object(id) {}
-    PROPERTY(i32, width) = 1920;
-    PROPERTY(i32, height) = 1200;
-    PROPERTY(Color, color) = Color(0.5f, 0.5f, 0.5f, 1.f);
+    i32 width = 1920;
+    i32 height = 1200;
+    Color color = Color(0.5f, 0.5f, 0.5f, 1.f);
     // Texture
 };
 
@@ -146,26 +143,17 @@ struct Camera {
     PerspectiveCamera geometry;
 };
 
-class OrbitCameraController : public Object {
+class OrbitCameraController {
 public:
-    OrbitCameraController(const string& id="") : Object(id) {}
-
     void update(Camera& camera, const Input& input) {
         CameraCanvas& camera_canvas = camera.canvas;
         PerspectiveCamera& camera_geometry = camera.geometry;
 
-        i32 framebuffer_width = STORE[StoreParams::kFrameBufferWidth];
-        i32 framebuffer_height = STORE[StoreParams::kFrameBufferHeight];
-        f32 aspect_ratio =
-            framebuffer_width / static_cast<f32>(framebuffer_height);
-        camera_canvas.width = framebuffer_width;
-        camera_canvas.height = framebuffer_height;
-        camera_geometry.set_aspect_ratio(aspect_ratio);
-
         auto left_rot = 0.f, up_rot = 0.f;
         auto left_rot_step = 0.1f, up_rot_step = 0.1f;
 
-        if (input.is_mouse_button_down(STORE[StoreParams::kKeyCameraRotate])) {
+        auto camera_rotate_key = GLFW_MOUSE_BUTTON_RIGHT;
+        if (input.is_mouse_button_down(camera_rotate_key)) {
             auto mouse_left_rot_step = 0.005f, mouse_up_rot_step = 0.005f;
             left_rot = -(input.cursor_pos_x - input.prev_cursor_pos_x) *
                        mouse_left_rot_step;
@@ -196,6 +184,6 @@ public:
         }
     }
 
-    PROPERTY(f32, min_zoom) = 0.1f;
-    PROPERTY(f32, max_zoom) = 50.f;
+    f32 min_zoom = 0.1f;
+    f32 max_zoom = 50.f;
 };

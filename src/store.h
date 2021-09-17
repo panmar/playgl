@@ -2,10 +2,6 @@
 
 #include <variant>
 
-#include <glad/glad.h>
-#define GLFW_INCLUDE_GLU
-#include <GLFW/glfw3.h>
-
 #include "common.h"
 
 class StoreParam {
@@ -19,6 +15,13 @@ public:
     operator mat4&() { return std::get<mat4>(param); }
     operator string&() { return std::get<string>(param); }
     operator const char*() { return std::get<string>(param).c_str(); }
+
+    operator const i32&() const { return std::get<i32>(param); }
+    operator const f32&() const { return std::get<f32>(param); }
+    operator const vec3&() const { return std::get<vec3>(param); }
+    operator const vec4&() const { return std::get<vec4>(param); }
+    operator const mat4&() const { return std::get<mat4>(param); }
+    operator const string&() const { return std::get<string>(param); }
 
     template <typename T>
     StoreParam& operator=(const T& param) {
@@ -44,23 +47,21 @@ private:
 class Store {
 public:
     StoreParam& operator[](const string& name) {
-        auto it = key_values.find(name);
-        if (it == key_values.end()) {
-            it = key_values.insert({name, StoreParam()}).first;
+        auto it = named_params.find(name);
+        if (it == named_params.end()) {
+            it = named_params.insert({name, StoreParam()}).first;
         }
         return it->second;
     }
 
+    const StoreParam& operator[](const string& name) const {
+        auto it = named_params.find(name);
+        return it->second;
+    }
+
 private:
-    std::unordered_map<std::string, StoreParam> key_values;
+    std::unordered_map<std::string, StoreParam> named_params;
 };
-
-inline Store& pgl_store() {
-    static Store store;
-    return store;
-}
-
-#define STORE pgl_store()
 
 // NOTE(panmar): Build-in store params
 namespace StoreParams {
@@ -83,14 +84,5 @@ const string kCameraFov = "CAMERA_FOV";
 const string kCameraAspectRatio = "CAMERA_ASPECT_RATIO";
 const string kCameraNear = "CAMERA_NEAR";
 const string kCameraFar = "CAMERA_FAR";
-
-inline void initialize() {
-    STORE[kWindowTitle] = "PlayGL";
-    STORE[kFrameBufferWidth] = 1920;
-    STORE[kFrameBufferHeight] = 1200;
-
-    STORE[kKeyQuit] = GLFW_KEY_ESCAPE;
-    STORE[kKeyCameraRotate] = GLFW_MOUSE_BUTTON_RIGHT;
-}
 
 }  // namespace StoreParams

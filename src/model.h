@@ -347,14 +347,6 @@ private:
     ModelData& data;
 };
 
-class GpuModelData {
-public:
-    virtual ~GpuModelData() = default;
-
-    virtual void bind() = 0;
-    virtual void reload(const ModelData& data) = 0;
-};
-
 class Model {
 public:
     void update(f32 elapsed_time) {
@@ -364,6 +356,5 @@ public:
     }
 
     ModelData data;
-    unique_ptr<GpuModelData> gpu_data;
     unique_ptr<AnimationController> animation_controller;
 };

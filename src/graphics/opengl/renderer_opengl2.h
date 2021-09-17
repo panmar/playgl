@@ -15,28 +15,28 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     }
 
-    static void begin_frame(const PerspectiveCamera& camera,
+    static void begin_frame(const Camera& camera,
                             bool enable_multisampling = false) {
         {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            auto camera_position = camera.get_position();
-            auto camera_target = camera.get_target();
-            auto camera_up = camera.get_up();
+            auto camera_position = camera.geometry.get_position();
+            auto camera_target = camera.geometry.get_target();
+            auto camera_up = camera.geometry.get_up();
             gluLookAt(camera_position.x, camera_position.y, camera_position.z,
                       camera_target.x, camera_target.y, camera_target.z,
                       camera_up.x, camera_up.y, camera_up.z);
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            gluPerspective(glm::degrees(camera.get_fov()),
-                           camera.get_aspect_ratio(), camera.get_near(),
-                           camera.get_far());
+            gluPerspective(glm::degrees(camera.geometry.get_fov()),
+                           camera.geometry.get_aspect_ratio(),
+                           camera.geometry.get_near(),
+                           camera.geometry.get_far());
         }
 
-        glViewport(0, 0, STORE[StoreParams::kFrameBufferWidth],
-                   STORE[StoreParams::kFrameBufferHeight]);
+        glViewport(0, 0, camera.canvas.width, camera.canvas.height);
 
         glClearColor(0.5f, 0.5f, 0.5f, 1.f);
 

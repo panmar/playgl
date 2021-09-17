@@ -1,12 +1,12 @@
 #version 330 core
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
+in vec3 IN_POSITION;
 
 uniform mat4 world;
 uniform mat4 view;
 uniform mat4 projection;
 
 void main() {
-    gl_Position = projection * view * world * vec4(position, 1.0);
+    gl_Position = vec4(IN_POSITION.x, IN_POSITION.y, IN_POSITION.z, 1.0) *
+                  world * view * projection;
 }
