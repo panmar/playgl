@@ -35,8 +35,13 @@ public:
         shader.bind();
         state.bind();
 
-        glDrawArrays(static_cast<i32>(geometry.topology),
-                     geometry.vertex_start_index, geometry.vertex_count);
+        if (geometry.indices.empty()) {
+            glDrawArrays(static_cast<i32>(geometry.topology), 0,
+                         geometry.positions.size());
+        } else {
+            glDrawElements(static_cast<i32>(geometry.topology),
+                           geometry.indices.size(), GL_UNSIGNED_INT, 0);
+        }
 
         gpu_buffer.unbind();
         shader.unbind();
@@ -66,6 +71,16 @@ private:
 
             glGenVertexArrays(1, &buffer.vao);
             glBindVertexArray(buffer.vao);
+
+            if (!geometry.indices.empty()) {
+                u32 ebo = 0;
+                glGenBuffers(1, &ebo);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+                glBufferData(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    sizeof(geometry.indices[0]) * geometry.indices.size(),
+                    geometry.indices.data(), GL_STATIC_DRAW);
+            }
 
             // TODO(panmar): Should I disable VertexAttribArray?
             // According below it is not necessary:
