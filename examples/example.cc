@@ -6,7 +6,7 @@ bool pgl_init() { return true; }
 void pgl_update(System& system){};
 
 void pgl_render(System& system) {
-    system.framebuffers("#main").color().depth().clear(Colors::White).bind();
+    system.framebuffers("#main").color().depth().clear().bind();
 
     system.debug.gizmo().position(vec3(0.f, 1.f, 0.f));
     system.debug.grid().edge(10.f);
@@ -47,23 +47,7 @@ void pgl_render(System& system) {
             .param("projection", system.camera.geometry.get_projection())
             .param("color", vec4(0.f, 1.f, 0.f, 1.f)));
 
-    system.postprocess("#main")
-        .with("inverse.fs")
-        .resulting("#inverse");
+    system.postprocess("#main").with("grayscale.fs").resulting("#grayscale");
 
-    system.framebuffers("#inverse").present();
+    system.framebuffers("#grayscale").present();
 };
-
-// clang-format off
-//
-// USE CASE IDEAS:
-//
-// scene.model("boy")
-//      .animation("run")               // <---- Optional
-//      .loop()                         // <---- Optional
-//      .play(elapsed_seconds)
-//
-// scene.collect("boy", "tree", "floor")
-//      .update(system.timer.elapsed_time);
-//
-// clang-format on

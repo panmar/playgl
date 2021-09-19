@@ -26,7 +26,7 @@ struct System {
 
     GeometryRenderer geometry;
     debug::DebugRenderer debug{geometry};
-    FramebufferContainer framebuffers{content, geometry};
+    FramebufferContainer framebuffers{camera, content, geometry};
 
     Postprocess postprocess{content, geometry, framebuffers};
 };

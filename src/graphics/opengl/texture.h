@@ -34,7 +34,8 @@ public:
 
     void unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 
-    TextureDesc desc;
+    // NOTE(panmar): If the texture was created from desc it is stored here
+    const TextureDesc desc;
 
 private:
     Texture(const Path& path)
@@ -75,6 +76,7 @@ private:
         }
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
         return texture;
     }
 
