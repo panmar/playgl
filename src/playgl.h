@@ -24,27 +24,11 @@ struct System {
     Camera camera;
     OrbitCameraController camera_controller;
 
-    GeometryRenderer geometry_renderer;
-    debug::DebugRenderer debug_renderer{geometry_renderer};
-};
+    GeometryRenderer geometry;
+    debug::DebugRenderer debug{geometry};
+    FramebufferContainer framebuffers{content, geometry};
 
-struct SystemRef {
-    static SystemRef from(System& system) {
-        return SystemRef{system.timer,         system.input,
-                         system.content,       system.store,
-                         system.camera,        system.geometry_renderer,
-                         system.debug_renderer};
-    }
-
-    const Timer& timer;
-    const Input& input;
-    Content& content;
-    Store& store;
-
-    const Camera& camera;
-
-    GeometryRenderer& geometry;
-    debug::DebugRenderer& debug;
+    Postprocess postprocess{content, geometry, framebuffers};
 };
 
 // NOTE(panmar): Those functions should be defined by extending program
@@ -53,8 +37,8 @@ struct SystemRef {
 bool pgl_init();
 
 // Called every frame
-void pgl_update(SystemRef& system);
-void pgl_render(SystemRef& system);
+void pgl_update(System& system);
+void pgl_render(System& system);
 
 // ----------------------------------
 
@@ -91,15 +75,14 @@ public:
             glfwPollEvents();
 
             system.timer.tick();
-            system.debug_renderer.clear_ephemerals();
+            system.debug.clear_ephemerals();
             system.camera_controller.update(system.camera, system.input);
 
-            pgl_update(SystemRef::from(system));
+            pgl_update(system);
             Gui::update();
 
-            frame_rendering_setup(system.camera, true);
-            pgl_render(SystemRef::from(system));
-            system.debug_renderer.render(system.camera);
+            pgl_render(system);
+            system.debug.render(system.camera);
             Gui::render();
 
             glfwMakeContextCurrent(window);

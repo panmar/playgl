@@ -144,6 +144,7 @@ public:
         if (location != -1) {
             bind();
             param(name, 0);
+            // TODO(panmar): Where is unbinding? It does not exist!
             texture.bind();
         }
         return *this;

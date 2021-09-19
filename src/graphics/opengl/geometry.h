@@ -101,6 +101,27 @@ struct Quad : public Geometry {
         };
         // clang-format on
     }
+};	
+
+struct ScreenQuad : public Geometry {
+    ScreenQuad() {
+        topology = Topology::Triangles;
+
+        // clang-format off
+        positions = {
+            {-1.f, 1.f, 0.f}, {-1.f, -1.f, 0.f}, {1.f, -1.f, 0.f},
+            {-1.f, 1.f, 0.f}, {1.f, -1.f, 0.f}, {1.f, 1.f, 0.f}
+        };
+        normals = {
+            {0.f, 0.f, 1.f}, {0.f, 0.f, 1.f}, {0.f, 0.f, 1.f},
+            {0.f, 0.f, 1.f}, {0.f, 0.f, 1.f}, {0.f, 0.f, 1.f}
+        };
+        texcoords = {
+            {0.f, 1.f}, {0.f, 0.f}, {1.f, 0.f},
+            {0.f, 1.f}, {1.f, 0.f}, {1.f, 1.f}
+        };
+        // clang-format on
+    }
 };
 
 struct Cube : public Geometry {

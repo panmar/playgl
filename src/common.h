@@ -9,6 +9,7 @@
 #include <fmt/core.h>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -26,8 +27,8 @@ using std::string;
 using std::vector;
 
 using std::unique_ptr;
-
 using Path = std::filesystem::path;
+using std::optional;
 
 using i8 = int8_t;
 using u8 = uint8_t;

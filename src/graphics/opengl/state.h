@@ -33,11 +33,15 @@ public:
 
         if (_depth_test) {
             glEnable(GL_DEPTH_TEST);
+        } else {
+            glDisable(GL_DEPTH_TEST);
         }
 
         if (_cull_face) {
             glEnable(GL_CULL_FACE);
             glCullFace(static_cast<i32>(_cull_face_mode));
+        } else {
+            glDisable(GL_CULL_FACE);
         }
     }
 

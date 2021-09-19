@@ -9,36 +9,52 @@
 #include "common.h"
 #include "resource.h"
 
+struct TextureDesc {
+    enum class Format { RGB = GL_RGB, Depth32 };
+    enum class Filter { Linear = GL_LINEAR };
+    u32 width = 0;
+    u32 height = 0;
+    Format format = Format::RGB;
+    Filter min_filter = Filter::Linear;
+    Filter max_filter = Filter::Linear;
+};
+
 class Texture : public LazyResource<u32> {
 public:
     static Texture from_file(const Path& path) { return Texture{path}; }
 
+    static Texture from_desc(const TextureDesc& desc) { return Texture{desc}; }
+
     void bind() const {
-        if (resource() && !bound) {
+        if (resource()) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, resource());
-            bound = true;
         }
     }
 
-    void unbind() const {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        bound = false;
-    }
+    void unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
+
+    TextureDesc desc;
 
 private:
     Texture(const Path& path)
         : LazyResource(texture_resource_deleter), path(path) {}
 
-    virtual u32 create_resource() const override {
-        u32 resource = 0;
-        glGenTextures(1, &resource);
-        glBindTexture(GL_TEXTURE_2D, resource);
-        // set the texture wrapping/filtering options (on the currently bound
-        // texture object)
+    Texture(const TextureDesc& desc)
+        : LazyResource(texture_resource_deleter), desc(desc) {}
 
-        // TODO(panmar): Can we change it live (e.g. during shader parameter
-        // setup)?
+    virtual u32 create_resource() const override {
+        if (path.empty()) {
+            return create_texture_from_desc(desc);
+        }
+        return create_texture_from_path(path);
+    }
+
+    static u32 create_texture_from_path(const Path& path) {
+        u32 texture = 0;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -47,8 +63,9 @@ private:
 
         stbi_set_flip_vertically_on_load(true);
         i32 width, height, channels;
-        buffer.reset(
-            stbi_load(path.string().c_str(), &width, &height, &channels, 0));
+        unique_ptr<u8, decltype(&image_data_deleter)> buffer{
+            stbi_load(path.string().c_str(), &width, &height, &channels, 0),
+            image_data_deleter};
         if (buffer) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                          GL_UNSIGNED_BYTE, buffer.get());
@@ -58,7 +75,29 @@ private:
         }
 
         glBindTexture(GL_TEXTURE_2D, 0);
-        return resource;
+        return texture;
+    }
+
+    static u32 create_texture_from_desc(const TextureDesc& desc) {
+        u32 texture = 0;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        if (desc.format == TextureDesc::Format::Depth32) {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, desc.width,
+                         desc.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        } else {
+            glTexImage2D(GL_TEXTURE_2D, 0, static_cast<i32>(desc.format),
+                         desc.width, desc.height, 0,
+                         static_cast<i32>(desc.format), GL_UNSIGNED_BYTE, NULL);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        static_cast<i32>(desc.min_filter));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                        static_cast<i32>(desc.max_filter));
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return texture;
     }
 
     static void texture_resource_deleter(u32& resource) {
@@ -70,8 +109,6 @@ private:
 
     static void image_data_deleter(u8* image) { stbi_image_free(image); }
 
+    // NOTE(panmar): If the texture was created from path it is the path
     const Path path;
-    mutable unique_ptr<u8, decltype(&image_data_deleter)> buffer{
-        nullptr, image_data_deleter};
-    mutable bool bound = false;
 };

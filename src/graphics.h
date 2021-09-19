@@ -6,4 +6,6 @@
 #include "graphics/opengl/texture.h"
 #include "graphics/opengl/shader.h"
 #include "graphics/opengl/geometry_renderer.h"
+#include "graphics/opengl/framebuffer.h"
 #include "graphics/opengl/debug_render.h"
+#include "graphics/opengl/postprocess.h"
