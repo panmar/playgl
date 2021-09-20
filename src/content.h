@@ -35,7 +35,7 @@ public:
 
         if (path_it == resource_filepaths.end()) {
             string error = fmt::format("Cannot find resource {}", id);
-            throw std::runtime_error(error);
+            throw PlayGlException(error);
         }
 
         model->data = importer.import(*path_it);
@@ -58,7 +58,7 @@ public:
 
         if (vs_path_it == resource_filepaths.end()) {
             string error = fmt::format("Cannot find resource {}", vs_id);
-            throw std::runtime_error(error);
+            throw PlayGlException(error);
         }
 
         auto fs_path_it =
@@ -69,7 +69,7 @@ public:
 
         if (fs_path_it == resource_filepaths.end()) {
             string error = fmt::format("Cannot find resource {}", fs_id);
-            throw std::runtime_error(error);
+            throw PlayGlException(error);
         }
 
         auto shader = Shader::from_file(*vs_path_it, *fs_path_it);
@@ -92,7 +92,7 @@ public:
 
         if (path_it == resource_filepaths.end()) {
             string error = fmt::format("Cannot find resource {}", id);
-            throw std::runtime_error(error);
+            throw PlayGlException(error);
         }
 
         return id_to_textures

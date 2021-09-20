@@ -24,13 +24,13 @@ struct GpuBuffer {
         auto buffer = GpuBuffer{};
 
         if (!shader.has_attrib(Shader::INPUT_POSITION_ATTRIB)) {
-            throw std::runtime_error(
+            throw PlayGlException(
                 fmt::format("Attrib {} does not exist in the shader.",
                             Shader::INPUT_POSITION_ATTRIB));
         }
 
         if (geometry.positions.empty()) {
-            throw std::runtime_error("Geometry has no positions.");
+            throw PlayGlException("Geometry has no positions.");
         }
 
         glGenVertexArrays(1, &buffer.vao);
@@ -219,19 +219,19 @@ private:
                     [&name, &shader](auto&& arg) {
                         using T = std::decay_t<decltype(arg)>;
                         if constexpr (std::is_same_v<T, i32>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, f32>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, vec2>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, vec3>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, vec4>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, mat4>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, Color>) {
-                            shader.param(name.c_str(), arg);
+                            shader.try_param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, string>) {
                             // NOTE(panmar): Not supported
                         } else {

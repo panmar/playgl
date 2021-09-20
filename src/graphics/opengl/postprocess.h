@@ -36,7 +36,7 @@ public:
     template <class ParamType>
     Postprocess& param(const char* name, const ParamType& value) {
         if (!shader) {
-            throw std::runtime_error(
+            throw PlayGlException(
                 "Postprocess: `with` argument should be passed before "
                 "`param`");
         }
@@ -46,12 +46,12 @@ public:
 
     void resulting(const string& output_framebuffer_id) {
         if (input_framebuffer_id.empty()) {
-            throw std::runtime_error(
+            throw PlayGlException(
                 "Postprocess: missing `framebuffer` argument");
         }
 
         if (!shader) {
-            throw std::runtime_error("Postprocess: missing `with` argument");
+            throw PlayGlException("Postprocess: missing `with` argument");
         }
 
         framebuffers(output_framebuffer_id).color().bind();

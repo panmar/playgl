@@ -31,131 +31,157 @@ public:
         return glGetAttribLocation(resource(), name);
     }
 
+    template <class ParamType>
+    const Shader& try_param(const char* name, const ParamType& value) const {
+        try {
+            return param(name, value);
+        } catch (const PlayGlException& ex) {
+            return *this;
+        }
+    }
+
     const Shader& param(const char* name, bool value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform1i(location, static_cast<i32>(value));
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniform1i(location, static_cast<i32>(value));
         return *this;
     }
 
     const Shader& param(const char* name, i32 value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform1i(location, value);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniform1i(location, value);
         return *this;
     }
 
     const Shader& param(const char* name, f32 value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform1f(location, value);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniform1f(location, value);
         return *this;
     }
 
     const Shader& param(const char* name, const glm::vec2& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform2fv(location, 1, &value[0]);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
-        return *this;
-    }
-
-    const Shader& param(const char* name, f32 x, f32 y) const {
-        auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform2f(location, x, y);
-        }
+        bind();
+        glUniform2fv(location, 1, &value[0]);
         return *this;
     }
 
     const Shader& param(const char* name, const glm::vec3& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform3fv(location, 1, &value[0]);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
-        return *this;
-    }
-
-    const Shader& param(const char* name, f32 x, f32 y, f32 z) const {
-        auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform3f(location, x, y, z);
-        }
+        bind();
+        glUniform3fv(location, 1, &value[0]);
         return *this;
     }
 
     const Shader& param(const char* name, const glm::vec4& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform4fv(location, 1, &value[0]);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniform4fv(location, 1, &value[0]);
         return *this;
     }
 
     const Shader& param(const char* name, const Color& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform4fv(location, 1, value.data);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
-        return *this;
-    }
-
-    const Shader& param(const char* name, f32 x, f32 y, f32 z, f32 w) const {
-        auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniform4f(location, x, y, z, w);
-        }
+        bind();
+        glUniform4fv(location, 1, value.data);
         return *this;
     }
 
     const Shader& param(const char* name, const glm::mat2& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniformMatrix2fv(location, 1, GL_TRUE, &value[0][0]);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniformMatrix2fv(location, 1, GL_TRUE, &value[0][0]);
         return *this;
     }
 
     const Shader& param(const char* name, const glm::mat3& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniformMatrix3fv(location, 1, GL_TRUE, &value[0][0]);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniformMatrix3fv(location, 1, GL_TRUE, &value[0][0]);
         return *this;
     }
 
     const Shader& param(const char* name, const glm::mat4& value) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            glUniformMatrix4fv(location, 1, GL_TRUE, &value[0][0]);
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        glUniformMatrix4fv(location, 1, GL_TRUE, &value[0][0]);
         return *this;
     }
 
     const Shader& param(const char* name, const Texture& texture) const {
         auto location = glGetUniformLocation(resource(), name);
-        if (location != -1) {
-            bind();
-            param(name, 0);
-            // TODO(panmar): Where is unbinding? It does not exist!
-            texture.bind();
+        if (location == -1) {
+            throw PlayGlException(
+                fmt::format("Shader[{}:{}]: Could not find param `{}`",
+                            vs_path.filename().string(),
+                            fs_path.filename().string(), name));
         }
+        bind();
+        param(name, 0);
+        // TODO(panmar): Where is unbinding? It does not exist!
+        texture.bind();
         return *this;
     }
 

@@ -6,7 +6,7 @@
 
 inline string read_file(const std::filesystem::path& filepath) {
     if (!std::filesystem::exists(filepath)) {
-        throw std::runtime_error(
+        throw PlayGlException(
             fmt::format("File does not exist: `{}`", filepath.string()));
     }
 

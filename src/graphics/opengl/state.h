@@ -25,7 +25,7 @@ public:
 
     void bind() const {
         if (bind_lock) {
-            std::runtime_error(
+            PlayGlException(
                 "Cannot bind GpuState. Unbind previous state first.");
         }
 
@@ -47,7 +47,7 @@ public:
 
     void unbind() const {
         if (!bind_lock) {
-            std::runtime_error("GpuState has already been unbound.");
+            PlayGlException("GpuState has already been unbound.");
         }
 
         bind_lock = false;

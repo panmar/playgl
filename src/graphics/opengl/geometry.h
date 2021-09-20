@@ -382,7 +382,7 @@ struct TrefoilKnot : public ParametricSurfaceParShapes {
 
 inline Geometry extract_normals(const Geometry& geometry) {
     if (geometry.normals.empty()) {
-        throw std::runtime_error("Geometry does not have any normals");
+        throw PlayGlException("Geometry does not have any normals");
     }
 
     Geometry result;

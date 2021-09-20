@@ -72,7 +72,7 @@ private:
                          GL_UNSIGNED_BYTE, buffer.get());
             glGenerateMipmap(GL_TEXTURE_2D);
         } else {
-            throw std::runtime_error("Failed to load texture");
+            throw PlayGlException("Failed to load texture");
         }
 
         glBindTexture(GL_TEXTURE_2D, 0);

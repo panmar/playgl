@@ -21,7 +21,7 @@ public:
                 aiProcess_FlipUVs);
 
         if (!scene) {
-            throw std::runtime_error(
+            throw PlayGlException(
                 fmt::format("Assimp error: {}", importer.GetErrorString()));
         }
 
@@ -42,7 +42,7 @@ public:
         if (scene->HasAnimations()) {
             if (!import_animations(model.animations,
                                    model.animations_duration)) {
-                throw std::runtime_error("Failure importing animations");
+                throw PlayGlException("Failure importing animations");
             }
         }
 

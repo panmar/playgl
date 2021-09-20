@@ -69,7 +69,7 @@ public:
 
     Framebuffer& color(u32 width, u32 height) {
         if (!framebuffer) {
-            std::runtime_error("No valid framebuffer found");
+            PlayGlException("No valid framebuffer found");
         }
 
         if (color_texture) {
@@ -85,7 +85,7 @@ public:
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) !=
             GL_FRAMEBUFFER_COMPLETE) {
-            std::runtime_error("Framebuffer is not complete!");
+            PlayGlException("Framebuffer is not complete!");
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -99,7 +99,7 @@ public:
 
     Framebuffer& depth(u32 width, u32 height) {
         if (!framebuffer) {
-            std::runtime_error("No valid framebuffer found");
+            PlayGlException("No valid framebuffer found");
         }
 
         if (depth_texture) {
@@ -115,7 +115,7 @@ public:
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) !=
             GL_FRAMEBUFFER_COMPLETE) {
-            std::runtime_error("Framebuffer is not complete!");
+            PlayGlException("Framebuffer is not complete!");
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
