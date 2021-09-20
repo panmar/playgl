@@ -8,7 +8,7 @@ in vec3 OUT_FRAGMENT_POSITION;
 uniform vec3 light_pos; 
 uniform vec3 view_pos; 
 uniform vec3 light_color;
-uniform vec3 object_color;
+uniform vec3 PHONG_COLOR;
 
 void main()
 {
@@ -29,6 +29,6 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * light_color;  
         
-    vec3 result = (ambient + diffuse + specular) * object_color;
+    vec3 result = (ambient + diffuse + specular) * PHONG_COLOR;
     FragColor = vec4(result, 1.0);
 } 

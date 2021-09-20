@@ -45,7 +45,7 @@ struct GizmoDesc {
 
 class DebugRenderer {
 public:
-    DebugRenderer(const GeometryRenderer& renderer)
+    DebugRenderer(GeometryRenderer& renderer)
         : geometry_renderer(renderer) {}
 
     GridDesc& grid() const { return grids.emplace_back(); }
@@ -69,7 +69,7 @@ public:
     }
 
 private:
-    const GeometryRenderer& geometry_renderer;
+    GeometryRenderer& geometry_renderer;
     mutable vector<GridDesc> grids;
     mutable vector<GizmoDesc> gizmos;
 

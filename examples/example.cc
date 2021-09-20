@@ -2,7 +2,8 @@
 #include "playgl.h"
 
 void pgl_init(Store& store) {
-    store["MY_PARAM1"].is(StoreParam::Gui) = vec3(1.f, 2.f, 3.f);
+    store["PHONG_COLOR"].is(StoreParam::Gui | StoreParam::Shader) =
+        vec3(0.7f, 0.4f, 0.3f);
     store["MY_PARAM2"].is(StoreParam::Gui) = 12345;
 }
 
@@ -58,8 +59,7 @@ void pgl_render(System& system) {
             .param("projection", system.camera.geometry.get_projection())
             .param("light_pos", vec3(5.f, 5.f, 5.f))
             .param("view_pos", system.camera.geometry.get_position())
-            .param("light_color", vec3(0.8f, 0.2f, 0.4f))
-            .param("object_color", vec3(0.7f, 0.4f, 0.3f)));
+            .param("light_color", vec3(0.8f, 0.2f, 0.4f)));
 
     system.geometry.render(
         geometry::extract_normals(geometry::Dodecahedron{}),

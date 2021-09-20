@@ -40,9 +40,10 @@ void render(Store& store) {
     {
         ImGui::Begin("User params");
 
-        for (auto& param : store) {
-            auto& name = param.first;
-            if (param.second.has(StoreParam::Gui)) {
+        for (auto& key_value : store) {
+            auto& name = key_value.first;
+            auto& param = key_value.second;
+            if (param.has(StoreParam::Gui)) {
                 std::visit(
                     [&name](auto&& arg) {
                         using T = std::decay_t<decltype(arg)>;
@@ -64,7 +65,7 @@ void render(Store& store) {
                             static_assert(false);
                         }
                     },
-                    param.second.param);
+                    param.param);
             }
         }
 

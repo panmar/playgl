@@ -11,6 +11,7 @@
 #include "graphics/opengl/state.h"
 #include "graphics/opengl/shader.h"
 #include "camera.h"
+#include "store.h"
 
 struct GpuBuffer {
     GpuBuffer() = default;
@@ -182,15 +183,17 @@ private:
     unordered_map<string, GpuBuffer> hashed_buffers;
 };
 
-
 class GeometryRenderer {
 public:
+    GeometryRenderer(Store& store) : store(store) {}
+
     void render(const Geometry& geometry, const Shader& shader,
-                const GpuState& state = GpuState()) const {
+                const GpuState& state = GpuState()) {
         auto& gpu_buffer = hashed_gpubuffers.get(geometry, shader);
 
         gpu_buffer.bind();
         shader.bind();
+        populate_shader_params_from_store(shader);
         state.bind();
 
         if (geometry.indices.empty()) {
@@ -207,5 +210,37 @@ public:
     }
 
 private:
-    mutable GpuBufferHashmap hashed_gpubuffers;
+    void populate_shader_params_from_store(const Shader& shader) {
+        for (auto& key_value : store) {
+            auto& name = key_value.first;
+            auto& param = key_value.second;
+            if (param.has(StoreParam::Shader)) {
+                std::visit(
+                    [&name, &shader](auto&& arg) {
+                        using T = std::decay_t<decltype(arg)>;
+                        if constexpr (std::is_same_v<T, i32>) {
+                            shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, f32>) {
+                            shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, vec2>) {
+                            shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, vec3>) {
+                            shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, vec4>) {
+                            shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, mat4>) {
+                            shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, string>) {
+                            // NOTE(panmar): Not supported
+                        } else {
+                            static_assert(false);
+                        }
+                    },
+                    param.param);
+            }
+        }
+    }
+
+    Store& store;
+    GpuBufferHashmap hashed_gpubuffers;
 };
