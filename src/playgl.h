@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
+#include "config.h"
 #include "camera.h"
 #include "graphics.h"
 #include "gui.h"
@@ -52,6 +53,12 @@ void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height);
 
 class PlayGlApp {
 public:
+    PlayGlApp(const char* window_title, u32 window_width, u32 window_height) {
+        config::window_title = window_title;
+        config::window_width = window_width;
+        config::window_height = window_height;
+    }
+
     void run() {
         using namespace std::literals::chrono_literals;
 
@@ -88,8 +95,7 @@ public:
             glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);
 
-            if (system.input.is_key_pressed(
-                    system.store[StoreParams::kKeyQuit])) {
+            if (system.input.is_key_pressed(config::key_quit)) {
                 glfwSetWindowShouldClose(window, true);
             }
 
@@ -122,13 +128,13 @@ public:
             return;
         }
 
-        system.store[StoreParams::kFrameBufferWidth] = width;
-        system.store[StoreParams::kFrameBufferHeight] = height;
-
         system.camera.canvas.width = width;
         system.camera.canvas.height = height;
         system.camera.geometry.set_aspect_ratio(width /
                                                 static_cast<f32>(height));
+
+        config::window_width = width;
+        config::window_height = height;
     }
 
 private:
@@ -136,17 +142,6 @@ private:
     System system;
 
     bool startup() {
-        // Store initialization
-        {
-            Store& store = system.store;
-            store[StoreParams::kWindowTitle] = "PlayGL";
-            store[StoreParams::kFrameBufferWidth] = 1920;
-            store[StoreParams::kFrameBufferHeight] = 1200;
-
-            store[StoreParams::kKeyQuit] = GLFW_KEY_ESCAPE;
-            store[StoreParams::kKeyCameraRotate] = GLFW_MOUSE_BUTTON_RIGHT;
-        }
-
         if (!glfwInit()) {
             return false;
         }
@@ -159,10 +154,8 @@ private:
         }
         pgl_init(system.store);
 
-        window = glfwCreateWindow(system.store[StoreParams::kFrameBufferWidth],
-                                  system.store[StoreParams::kFrameBufferHeight],
-                                  system.store[StoreParams::kWindowTitle],
-                                  nullptr, nullptr);
+        window = glfwCreateWindow(config::window_width, config::window_height,
+                                  config::window_title, nullptr, nullptr);
 
         if (!window) {
             glfwTerminate();
@@ -240,7 +233,7 @@ inline void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height) {
 
 #ifdef PGL_DEFINE_MAIN
 int main() {
-    PlayGlApp app;
+    PlayGlApp app{"playgl", 1920, 1200};
     app.run();
     return 0;
 }

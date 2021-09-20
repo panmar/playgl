@@ -22,6 +22,7 @@ public:
     operator const vec3&() const { return std::get<vec3>(param); }
     operator const vec4&() const { return std::get<vec4>(param); }
     operator const mat4&() const { return std::get<mat4>(param); }
+    operator const Color&() const { return std::get<Color>(param); }
     operator const string&() const { return std::get<string>(param); }
 
     template <typename T>
@@ -38,17 +39,12 @@ public:
         return *this;
     }
 
-    StoreParam& is(u32 annotation_flags) {
-        annotations |= annotation_flags;
-        return *this;
-    }
-
     bool has(u32 annotation_flags) { return annotations & annotation_flags; }
 
     using ParamType =
         std::variant<i32, f32, glm::vec3, glm::vec4, glm::mat4, Color, string>;
     ParamType param;
-    u32 annotations = 0;
+    u32 annotations = AnnotationType::Gui | AnnotationType::Shader;
 };
 
 class Store {
@@ -73,27 +69,3 @@ public:
 private:
     std::unordered_map<std::string, StoreParam> named_params;
 };
-
-// NOTE(panmar): Build-in store params
-namespace StoreParams {
-
-const string kWindowTitle = "WINDOW_TITLE";
-const string kKeyQuit = "KEY_QUIT";
-const string kKeyCameraRotate = "KEY_CAMERA_ROTATE";
-
-const string kFrameBufferWidth = "GRAPHICS_FRAMEBUFFER_WIDTH";
-const string kFrameBufferHeight = "GRAPHICS_FRAMEBUFFER_HEIGHT";
-
-const string kTimeElapsedSeconds = "TIME_ELAPSED_SECONDS";
-
-const string kCameraView = "CAMERA_VIEW";
-const string kCameraProjection = "CAMERA_PROJECTION";
-const string kCameraPosition = "CAMERA_POSITION";
-const string kCameraTarget = "CAMERA_TARGET";
-const string kCameraUp = "CAMERA_UP";
-const string kCameraFov = "CAMERA_FOV";
-const string kCameraAspectRatio = "CAMERA_ASPECT_RATIO";
-const string kCameraNear = "CAMERA_NEAR";
-const string kCameraFar = "CAMERA_FAR";
-
-}  // namespace StoreParams

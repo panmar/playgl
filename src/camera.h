@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "input.h"
+#include "config.h"
 
 class CameraGeometry {
 public:
@@ -152,7 +153,7 @@ public:
         auto left_rot = 0.f, up_rot = 0.f;
         auto left_rot_step = 0.1f, up_rot_step = 0.1f;
 
-        auto camera_rotate_key = GLFW_MOUSE_BUTTON_RIGHT;
+        auto camera_rotate_key = config::key_camera_rotate;
         if (input.is_mouse_button_down(camera_rotate_key)) {
             auto mouse_left_rot_step = 0.005f, mouse_up_rot_step = 0.005f;
             left_rot = -(input.cursor_pos_x - input.prev_cursor_pos_x) *

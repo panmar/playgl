@@ -2,10 +2,8 @@
 #include "playgl.h"
 
 void pgl_init(Store& store) {
-    store["PHONG_COLOR"].is(StoreParam::Gui | StoreParam::Shader) =
-        Color(0.7f, 0.4f, 0.3f);
-    store["LIGHT_COLOR"].is(StoreParam::Gui | StoreParam::Shader) =
-        Color(0.8f, 0.2f, 0.4f);
+    store["PHONG_COLOR"] = Color(0.7f, 0.4f, 0.3f);
+    store["LIGHT_COLOR"] = Color(0.8f, 0.2f, 0.4f);
 }
 
 void pgl_update(System& system){};
