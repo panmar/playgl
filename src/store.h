@@ -13,6 +13,7 @@ public:
     operator vec3&() { return std::get<vec3>(param); }
     operator vec4&() { return std::get<vec4>(param); }
     operator mat4&() { return std::get<mat4>(param); }
+    operator Color&() { return std::get<Color>(param); }
     operator string&() { return std::get<string>(param); }
     operator const char*() { return std::get<string>(param).c_str(); }
 
@@ -42,12 +43,10 @@ public:
         return *this;
     }
 
-    bool has(u32 annotation_flags) {
-        return annotations & annotation_flags;
-    }
+    bool has(u32 annotation_flags) { return annotations & annotation_flags; }
 
     using ParamType =
-        std::variant<i32, f32, glm::vec3, glm::vec4, glm::mat4, string>;
+        std::variant<i32, f32, glm::vec3, glm::vec4, glm::mat4, Color, string>;
     ParamType param;
     u32 annotations = 0;
 };

@@ -57,6 +57,8 @@ void render(Store& store) {
                             ImGui::InputFloat3(name.c_str(), &arg.x);
                         } else if constexpr (std::is_same_v<T, vec4>) {
                             ImGui::InputFloat4(name.c_str(), &arg.x);
+                        } else if constexpr (std::is_same_v<T, Color>) {
+                            ImGui::ColorEdit4("Color", arg.data);
                         } else if constexpr (std::is_same_v<T, mat4>) {
                             // NOTE(panmar): Not supported
                         } else if constexpr (std::is_same_v<T, string>) {

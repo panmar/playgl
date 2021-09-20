@@ -230,6 +230,8 @@ private:
                             shader.param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, mat4>) {
                             shader.param(name.c_str(), arg);
+                        } else if constexpr (std::is_same_v<T, Color>) {
+                            shader.param(name.c_str(), arg);
                         } else if constexpr (std::is_same_v<T, string>) {
                             // NOTE(panmar): Not supported
                         } else {

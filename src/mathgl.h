@@ -18,12 +18,12 @@
 #include <glm/ext.hpp>
 #include <glm/gtx/compatibility.hpp>
 
-using glm::vec2;
-using glm::vec3;
-using glm::vec4;
 using glm::mat2;
 using glm::mat3;
 using glm::mat4;
+using glm::vec2;
+using glm::vec3;
+using glm::vec4;
 
 struct vec4u8 {
     union {
@@ -34,12 +34,25 @@ struct vec4u8 {
     };
 };
 
-using Color = glm::vec4;
+// using Color = glm::vec4;
+
+struct Color {
+    Color(f32 r, f32 g, f32 b, f32 a = 1.f) : r(r), g(g), b(b), a(a) {}
+    union {
+        struct {
+            f32 r;
+            f32 g;
+            f32 b;
+            f32 a;
+        };
+        f32 data[4];
+    };
+};
 
 namespace Colors {
-    const Color Black = Color{0.f, 0.f, 0.f, 1.f};
-    const Color White = Color{1.f, 1.f, 1.f, 1.f};
-    const Color Red = Color{1.f, 0.f, 0.f, 1.f};
-    const Color Green = Color{0.f, 1.f, 0.f, 1.f};
-    const Color Blue = Color{0.f, 0.f, 1.f, 1.f};
-}
+const Color Black = Color{0.f, 0.f, 0.f, 1.f};
+const Color White = Color{1.f, 1.f, 1.f, 1.f};
+const Color Red = Color{1.f, 0.f, 0.f, 1.f};
+const Color Green = Color{0.f, 1.f, 0.f, 1.f};
+const Color Blue = Color{0.f, 0.f, 1.f, 1.f};
+}  // namespace Colors

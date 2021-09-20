@@ -103,6 +103,15 @@ public:
         return *this;
     }
 
+    const Shader& param(const char* name, const Color& value) const {
+        auto location = glGetUniformLocation(resource(), name);
+        if (location != -1) {
+            bind();
+            glUniform4fv(location, 1, value.data);
+        }
+        return *this;
+    }
+
     const Shader& param(const char* name, f32 x, f32 y, f32 z, f32 w) const {
         auto location = glGetUniformLocation(resource(), name);
         if (location != -1) {

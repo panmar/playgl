@@ -29,7 +29,7 @@ struct GridDesc {
     DEBUG_DESC_PROPERTY(GridDesc, vec3, position) = vec3(0.f, 0.f, 0.f);
     DEBUG_DESC_PROPERTY(GridDesc, vec3, normal) = vec3(0.f, 1.f, 0.f);
     DEBUG_DESC_PROPERTY(GridDesc, f32, edge) = 1.f;
-    DEBUG_DESC_PROPERTY(GridDesc, Color, color) = vec4(1.f, 1.f, 1.f, 1.f);
+    DEBUG_DESC_PROPERTY(GridDesc, Color, color) = Color(1.f, 1.f, 1.f, 1.f);
 
     // NOTE(panmar): Should it persist across frames?
     DEBUG_DESC_PROPERTY_DEFAULT(GridDesc, bool, permanent, true) = false;
