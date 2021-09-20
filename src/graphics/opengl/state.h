@@ -12,8 +12,8 @@ public:
         FrontAndBack = GL_FRONT_AND_BACK
     };
 
-    GpuState& depth_test() {
-        _depth_test = true;
+    GpuState& nodepth() {
+        _depth_test = false;
         return *this;
     }
 
@@ -56,7 +56,7 @@ public:
 private:
     mutable bool bind_lock = false;
 
-    bool _depth_test = false;
+    bool _depth_test = true;
     bool _cull_face = false;
     CullFaceMode _cull_face_mode = CullFaceMode::Back;
 };

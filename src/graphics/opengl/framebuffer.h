@@ -58,7 +58,8 @@ public:
         geometry_renderer.render(
             geometry::ScreenQuad{},
             content.shader("postprocess.vs", "postprocess.fs")
-                .param("tex", color_texture.value()));
+                .param("tex", color_texture.value()),
+            GpuState().nodepth());
         return *this;
     }
 

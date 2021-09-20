@@ -91,7 +91,7 @@ private:
                            vec2(camera.canvas.width, camera.canvas.height))
                     .param("dash_size", 10.f)
                     .param("gap_size", 10.f),
-                GpuState().depth_test());
+                GpuState().nodepth());
         }
     }
 
@@ -107,7 +107,7 @@ private:
                            vec2(camera.canvas.width, camera.canvas.height))
                     .param("dash_size", 10.f)
                     .param("gap_size", 10.f),
-                GpuState().depth_test());
+                GpuState().nodepth());
         }
     }
 };

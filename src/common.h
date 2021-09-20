@@ -9,6 +9,7 @@
 #include <fmt/core.h>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <set>
 #include <stdexcept>

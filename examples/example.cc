@@ -47,6 +47,25 @@ void pgl_render(System& system) {
             .param("projection", system.camera.geometry.get_projection())
             .param("color", vec4(0.f, 1.f, 0.f, 1.f)));
 
+    system.geometry.render(
+        geometry::TrefoilKnot{},
+        system.content.shader("phong.vs", "phong.fs")
+            .param("world", glm::translate(vec3(3.f, 0.f, 3.f)))
+            .param("view", system.camera.geometry.get_view())
+            .param("projection", system.camera.geometry.get_projection())
+            .param("light_pos", vec3(5.f, 5.f, 5.f))
+            .param("view_pos", system.camera.geometry.get_position())
+            .param("light_color", vec3(0.8f, 0.2f, 0.4f))
+            .param("object_color", vec3(0.7f, 0.4f, 0.3f)));
+
+    system.geometry.render(
+        geometry::extract_normals(geometry::Dodecahedron{}),
+        system.content.shader("debug_dash.vs", "debug_dash.fs")
+            .param("world", glm::translate(vec3(3.f, 0.f, 3.f)))
+            .param("view", system.camera.geometry.get_view())
+            .param("projection", system.camera.geometry.get_projection())
+            .param("color", vec4(0.f, 1.f, 0.f, 1.f)));
+
     system.postprocess("#main").with("grayscale.fs").resulting("#grayscale");
 
     system.framebuffers("#grayscale").present();
