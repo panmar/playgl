@@ -4,7 +4,8 @@
 void pgl_init(Store& store) {
     store["PHONG_COLOR"].is(StoreParam::Gui | StoreParam::Shader) =
         Color(0.7f, 0.4f, 0.3f);
-    store["MY_PARAM2"].is(StoreParam::Gui) = 12345;
+    store["LIGHT_COLOR"].is(StoreParam::Gui | StoreParam::Shader) =
+        Color(0.8f, 0.2f, 0.4f);
 }
 
 void pgl_update(System& system){};
@@ -58,9 +59,7 @@ void pgl_render(System& system) {
             .param("view", system.camera.geometry.get_view())
             .param("projection", system.camera.geometry.get_projection())
             .param("light_pos", vec3(5.f, 5.f, 5.f))
-            .param("view_pos", system.camera.geometry.get_position())
-            .param("light_color", Color(0.8f, 0.2f, 0.4f)));
-
+            .param("view_pos", system.camera.geometry.get_position()));
     system.geometry.render(
         geometry::extract_normals(geometry::Dodecahedron{}),
         system.content.shader("debug_dash.vs", "debug_dash.fs")
