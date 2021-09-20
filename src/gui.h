@@ -32,21 +32,41 @@ bool startup(GLFWwindow* window) {
 
 void update() {}
 
-void render() {
+void render(Store& store) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     {
-        ImGui::Begin("Camera");
+        ImGui::Begin("User params");
 
-        // vec3 camera_position =
-        //     STORE[StoreParams::kCameraPosition];
-        // vec3 camera_target = STORE[StoreParams::kCameraTarget];
-        // vec3 camera_up = STORE[StoreParams::kCameraUp];
-        // ImGui::InputFloat3("Position", &camera_position.x);
-        // ImGui::InputFloat3("Target", &camera_target.x);
-        // ImGui::InputFloat3("Up", &camera_up.x);
+        for (auto& param : store) {
+            auto& name = param.first;
+            if (param.second.has(StoreParam::Gui)) {
+                std::visit(
+                    [&name](auto&& arg) {
+                        using T = std::decay_t<decltype(arg)>;
+                        if constexpr (std::is_same_v<T, i32>) {
+                            ImGui::InputInt(name.c_str(), &arg);
+                        } else if constexpr (std::is_same_v<T, f32>) {
+                            ImGui::InputFloat(name.c_str(), &arg);
+                        } else if constexpr (std::is_same_v<T, vec2>) {
+                            ImGui::InputFloat2(name.c_str(), &arg.x);
+                        } else if constexpr (std::is_same_v<T, vec3>) {
+                            ImGui::InputFloat3(name.c_str(), &arg.x);
+                        } else if constexpr (std::is_same_v<T, vec4>) {
+                            ImGui::InputFloat4(name.c_str(), &arg.x);
+                        } else if constexpr (std::is_same_v<T, mat4>) {
+                            // NOTE(panmar): Not supported
+                        } else if constexpr (std::is_same_v<T, string>) {
+                            // NOTE(panmar): Not supported
+                        } else {
+                            static_assert(false);
+                        }
+                    },
+                    param.second.param);
+            }
+        }
 
         ImGui::End();
     }

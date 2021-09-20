@@ -34,7 +34,7 @@ struct System {
 // NOTE(panmar): Those functions should be defined by extending program
 // ---------------------------------
 // Called ONCE before window/graphics setup
-bool pgl_init();
+void pgl_init(Store& store);
 
 // Called every frame
 void pgl_update(System& system);
@@ -83,7 +83,7 @@ public:
 
             pgl_render(system);
             system.debug.render(system.camera);
-            Gui::render();
+            Gui::render(system.store);
 
             glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);
@@ -147,10 +147,6 @@ private:
             store[StoreParams::kKeyCameraRotate] = GLFW_MOUSE_BUTTON_RIGHT;
         }
 
-        if (!pgl_init()) {
-            return false;
-        }
-
         if (!glfwInit()) {
             return false;
         }
@@ -161,7 +157,7 @@ private:
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
         }
-        pgl_init();
+        pgl_init(system.store);
 
         window = glfwCreateWindow(system.store[StoreParams::kFrameBufferWidth],
                                   system.store[StoreParams::kFrameBufferHeight],

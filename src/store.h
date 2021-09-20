@@ -6,7 +6,7 @@
 
 class StoreParam {
 public:
-    enum class ParamAnnotation { Gui, Shader, ReadOnly };
+    enum AnnotationType { Gui = 0b01, Shader = 0b10 };
 
     operator i32&() { return std::get<i32>(param); }
     operator f32&() { return std::get<f32>(param); }
@@ -37,11 +37,19 @@ public:
         return *this;
     }
 
-private:
+    StoreParam& is(u32 annotation_flags) {
+        annotations |= annotation_flags;
+        return *this;
+    }
+
+    bool has(u32 annotation_flags) {
+        return annotations & annotation_flags;
+    }
+
     using ParamType =
         std::variant<i32, f32, glm::vec3, glm::vec4, glm::mat4, string>;
     ParamType param;
-    u32 annotations;
+    u32 annotations = 0;
 };
 
 class Store {
@@ -58,6 +66,10 @@ public:
         auto it = named_params.find(name);
         return it->second;
     }
+
+    auto begin() { return named_params.begin(); }
+
+    auto end() { return named_params.end(); }
 
 private:
     std::unordered_map<std::string, StoreParam> named_params;

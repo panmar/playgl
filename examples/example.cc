@@ -1,7 +1,10 @@
 #define PGL_DEFINE_MAIN
 #include "playgl.h"
 
-bool pgl_init() { return true; }
+void pgl_init(Store& store) {
+    store["MY_PARAM1"].is(StoreParam::Gui) = vec3(1.f, 2.f, 3.f);
+    store["MY_PARAM2"].is(StoreParam::Gui) = 12345;
+}
 
 void pgl_update(System& system){};
 
