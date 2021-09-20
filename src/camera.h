@@ -84,14 +84,14 @@ private:
 class PerspectiveCamera : public CameraGeometry {
 public:
     PerspectiveCamera() = default;
-    PerspectiveCamera(f32 aspect_ratio, f32 fov, f32 near, f32 far)
-        : aspect_ratio(aspect_ratio), fov(fov), near(near), far(far) {}
+    PerspectiveCamera(f32 aspect_ratio, f32 fov, f32 _near, f32 _far)
+        : aspect_ratio(aspect_ratio), fov(fov), _near(_near), _far(_far) {}
     virtual ~PerspectiveCamera() = default;
 
     f32 get_aspect_ratio() const { return aspect_ratio; }
     f32 get_fov() const { return fov; }
-    f32 get_near() const { return near; }
-    f32 get_far() const { return far; }
+    f32 get_near() const { return _near; }
+    f32 get_far() const { return _far; }
 
     void set_aspect_ratio(f32 value) {
         aspect_ratio = value;
@@ -104,18 +104,18 @@ public:
     }
 
     void set_near(f32 value) {
-        near = value;
+        _near = value;
         is_valid_projection = false;
     }
 
     void set_far(f32 value) {
-        far = value;
+        _far = value;
         is_valid_projection = false;
     }
 
     const mat4& get_projection() const override {
         if (!is_valid_projection) {
-            projection = glm::perspective(fov, aspect_ratio, near, far);
+            projection = glm::perspective(fov, aspect_ratio, _near, _far);
             is_valid_projection = true;
         }
         return projection;
@@ -124,8 +124,8 @@ public:
 private:
     f32 aspect_ratio = 1.f;
     f32 fov = 1.1623f;
-    f32 near = 0.1f;
-    f32 far = 100.f;
+    f32 _near = 0.1f;
+    f32 _far = 100.f;
 
     mutable mat4 projection;
     mutable bool is_valid_projection = false;

@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
+#include "common.h"
 #include "config.h"
 #include "camera.h"
 #include "graphics.h"
@@ -13,7 +14,6 @@
 #include "input.h"
 #include "store.h"
 #include "timer.h"
-
 #include "content.h"
 
 struct System {
