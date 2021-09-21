@@ -10,11 +10,11 @@
 #include "resource.h"
 
 struct TextureDesc {
-    enum class Format { RGB = GL_RGB, Depth32 };
+    enum class Format { Srgb8_Alpha8 = GL_SRGB8_ALPHA8, Depth32 };
     enum class Filter { Linear = GL_LINEAR };
     u32 width = 0;
     u32 height = 0;
-    Format format = Format::RGB;
+    Format format = Format::Srgb8_Alpha8;
     Filter min_filter = Filter::Linear;
     Filter max_filter = Filter::Linear;
 };
@@ -86,12 +86,9 @@ private:
         glBindTexture(GL_TEXTURE_2D, texture);
 
         if (desc.format == TextureDesc::Format::Depth32) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, desc.width,
-                         desc.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, desc.width, desc.height);
         } else {
-            glTexImage2D(GL_TEXTURE_2D, 0, static_cast<i32>(desc.format),
-                         desc.width, desc.height, 0,
-                         static_cast<i32>(desc.format), GL_UNSIGNED_BYTE, NULL);
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_SRGB8_ALPHA8, desc.width, desc.height);
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,

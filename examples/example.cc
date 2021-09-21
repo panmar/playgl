@@ -9,10 +9,12 @@ void pgl_init(Store& store) {
 
 void pgl_update(System& system) {
     system.camera.canvas.color = system.store["screen_color"];
+    system.camera.canvas.framebuffer =
+        &system.framebuffers("#main").color().depth();
 };
 
 void pgl_render(System& system) {
-    system.framebuffers("#main").color().depth().clear().bind();
+    system.camera.canvas.clear();
 
     system.debug.gizmo().position(vec3(0.f, 1.f, 0.f));
     system.debug.grid().edge(10.f);
@@ -35,7 +37,11 @@ void pgl_render(System& system) {
             .param("world", glm::scale(vec3(2.f)))
             .param("view", system.camera.geometry.get_view())
             .param("projection", system.camera.geometry.get_projection())
-            .param("color", Color(0.f, 1.f, 1.f, 1.f)));
+            .param("color", Color(0.f, 1.f, 1.f, 1.f))
+            .param("resolution", vec2(system.camera.canvas.width,
+                                      system.camera.canvas.height))
+            .param("dash_size", 10.f)
+            .param("gap_size", 10.f));
 
     system.geometry.render(
         geometry::WirePyramid{},
@@ -43,7 +49,11 @@ void pgl_render(System& system) {
             .param("world", glm::scale(vec3(3.f)))
             .param("view", system.camera.geometry.get_view())
             .param("projection", system.camera.geometry.get_projection())
-            .param("color", Color(1.f, 1.f, 0.f, 1.f)));
+            .param("color", Color(1.f, 1.f, 0.f, 1.f))
+            .param("resolution", vec2(system.camera.canvas.width,
+                                      system.camera.canvas.height))
+            .param("dash_size", 10.f)
+            .param("gap_size", 10.f));
 
     system.geometry.render(
         geometry::WireSphere{10, 10},
@@ -51,7 +61,11 @@ void pgl_render(System& system) {
             .param("world", mat4(1.f))
             .param("view", system.camera.geometry.get_view())
             .param("projection", system.camera.geometry.get_projection())
-            .param("color", Color(0.f, 1.f, 0.f, 1.f)));
+            .param("color", Color(0.f, 1.f, 0.f, 1.f))
+            .param("resolution", vec2(system.camera.canvas.width,
+                                      system.camera.canvas.height))
+            .param("dash_size", 10.f)
+            .param("gap_size", 10.f));
 
     system.geometry.render(
         geometry::TrefoilKnot{},
@@ -64,5 +78,5 @@ void pgl_render(System& system) {
 
     system.postprocess("#main").with("grayscale.fs").resulting("#grayscale");
 
-    system.framebuffers("#grayscale").present();
+    system.framebuffers("#main").present();
 };

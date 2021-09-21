@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "common.h"
+#include "config.h"
 
 class GpuState {
 public:
@@ -71,6 +72,10 @@ public:
     void bind() const {
         bind_lock = true;
 
+        if (config::inverse_depth) {
+            glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+        }
+
         if (_blend) {
             glEnable(GL_BLEND);
             glBlendFunc(static_cast<i32>(_src_blend_mode),
@@ -85,6 +90,12 @@ public:
         if (_depth_test) {
             glEnable(GL_DEPTH_TEST);
             glDepthMask(_depth_write);
+
+            if (config::inverse_depth) {
+                glDepthFunc(GL_GREATER);
+            } else {
+                glDepthFunc(GL_LESS);
+            }
         } else {
             glDisable(GL_DEPTH_TEST);
         }

@@ -5,16 +5,14 @@
 #include <GLFW/glfw3.h>
 
 #include "common.h"
+#include "config.h"
 #include "graphics/opengl/texture.h"
-#include "graphics/opengl/geometry_renderer.h"
 #include "content.h"
 
 class Framebuffer {
 public:
     Framebuffer(Framebuffer&& other)
         : content(other.content),
-          geometry_renderer(other.geometry_renderer),
-          camera(other.camera),
           framebuffer(other.framebuffer),
           color_texture(std::move(other.color_texture)),
           depth_texture(std::move(other.depth_texture)) {
@@ -23,11 +21,7 @@ public:
         other.depth_texture = std::nullopt;
     }
 
-    Framebuffer(Camera& camera, Content& content,
-                GeometryRenderer& geometry_renderer)
-        : camera(camera),
-          content(content),
-          geometry_renderer(geometry_renderer) {
+    Framebuffer(Content& content) : content(content) {
         glGenFramebuffers(1, &framebuffer);
     }
 
@@ -37,14 +31,16 @@ public:
         }
     }
 
-    Framebuffer& clear() {
-        return clear(camera.canvas.color);
-    }
-
-    Framebuffer& clear(const Color& color) {
+    Framebuffer& clear(const Color& color = Colors::Black) {
         bind();
 
         glClearColor(color.r, color.g, color.b, color.a);
+        if (config::inverse_depth) {
+            glClearDepthf(0.f);
+        } else {
+            glClearDepthf(1.f);
+        }
+
         auto clear_flags = color_texture.has_value() ? GL_COLOR_BUFFER_BIT : 0;
         clear_flags |= depth_texture.has_value() ? GL_DEPTH_BUFFER_BIT : 0;
         glClear(clear_flags);
@@ -53,21 +49,18 @@ public:
 
     Framebuffer& present() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, camera.canvas.width, camera.canvas.height);
-
-        geometry_renderer.render(
-            geometry::ScreenQuad{},
-            content.shader("postprocess.vs", "postprocess.fs")
-                .param("tex", color_texture.value()),
-            GpuState().nodepth());
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, color_texture.value().desc.width,
+                          color_texture.value().desc.height, 0, 0,
+                          config::window_width, config::window_height,
+                          GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return *this;
     }
 
-    Framebuffer& color() {
-        return color(camera.canvas.width, camera.canvas.height);
-    }
-
-    Framebuffer& color(u32 width, u32 height) {
+    Framebuffer& color(u32 width = config::window_width,
+                       u32 height = config::window_height) {
         if (!framebuffer) {
             PlayGlException("No valid framebuffer found");
         }
@@ -77,7 +70,7 @@ public:
         }
 
         color_texture.emplace(Texture::from_desc(
-            TextureDesc{width, height, TextureDesc::Format::RGB}));
+            TextureDesc{width, height, TextureDesc::Format::Srgb8_Alpha8}));
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_2D, color_texture.value().resource(),
@@ -93,11 +86,8 @@ public:
         return *this;
     }
 
-    Framebuffer& depth() {
-        return depth(camera.canvas.width, camera.canvas.height);
-    }
-
-    Framebuffer& depth(u32 width, u32 height) {
+    Framebuffer& depth(u32 width = config::window_width,
+                       u32 height = config::window_height) {
         if (!framebuffer) {
             PlayGlException("No valid framebuffer found");
         }
@@ -132,9 +122,7 @@ public:
 
     void unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
-    Camera& camera;
     Content& content;
-    GeometryRenderer& geometry_renderer;
 
     u32 framebuffer = 0;
     optional<Texture> color_texture;
@@ -143,11 +131,7 @@ public:
 
 class FramebufferContainer {
 public:
-    FramebufferContainer(Camera& camera, Content& content,
-                         GeometryRenderer& geometry_renderer)
-        : camera(camera),
-          content(content),
-          geometry_renderer(geometry_renderer) {}
+    FramebufferContainer(Content& content) : content(content) {}
 
     Framebuffer& operator()(const string& framebuffer_id) {
         return get(framebuffer_id);
@@ -159,14 +143,10 @@ private:
             return id_to_framebuffers.find(framebuffer_id)->second;
         }
 
-        return id_to_framebuffers
-            .insert({framebuffer_id,
-                     Framebuffer{camera, content, geometry_renderer}})
+        return id_to_framebuffers.insert({framebuffer_id, Framebuffer{content}})
             .first->second;
     }
 
-    Camera& camera;
     Content& content;
-    GeometryRenderer& geometry_renderer;
     unordered_map<string, Framebuffer> id_to_framebuffers;
 };

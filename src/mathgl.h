@@ -55,4 +55,14 @@ const Color White = Color{1.f, 1.f, 1.f, 1.f};
 const Color Red = Color{1.f, 0.f, 0.f, 1.f};
 const Color Green = Color{0.f, 1.f, 0.f, 1.f};
 const Color Blue = Color{0.f, 0.f, 1.f, 1.f};
+
 }  // namespace Colors
+
+inline mat4 compute_inverse_depth_inf_perspective(f32 fov, f32 aspect_ratio,
+                                                  f32 _near) {
+    // https://nlguillemot.wordpress.com/2016/12/07/reversed-z-in-opengl/
+    // https://dev.theomader.com/depth-precision/
+    float f = 1.0f / tan(fov / 2.0f);
+    return mat4(f / aspect_ratio, 0.0f, 0.0f, 0.0f, 0.0f, f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, -1.0f, 0.0f, 0.0f, _near, 0.0f);
+}

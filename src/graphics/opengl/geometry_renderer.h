@@ -10,7 +10,6 @@
 #include "graphics/opengl/geometry.h"
 #include "graphics/opengl/state.h"
 #include "graphics/opengl/shader.h"
-#include "camera.h"
 #include "store.h"
 
 struct GpuBuffer {

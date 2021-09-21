@@ -45,8 +45,7 @@ struct GizmoDesc {
 
 class DebugRenderer {
 public:
-    DebugRenderer(GeometryRenderer& renderer)
-        : geometry_renderer(renderer) {}
+    DebugRenderer(GeometryRenderer& renderer) : geometry_renderer(renderer) {}
 
     GridDesc& grid() const { return grids.emplace_back(); }
     GizmoDesc& gizmo() const { return gizmos.emplace_back(); }
@@ -64,6 +63,9 @@ public:
     }
 
     void render(const Camera& camera) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, config::window_width, config::window_height);
+
         render_grids(camera);
         render_gizmos(camera);
     }

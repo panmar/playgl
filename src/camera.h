@@ -1,8 +1,10 @@
 #pragma once
 
 #include "common.h"
+#include "config.h"
 #include "input.h"
 #include "config.h"
+#include "graphics/opengl/framebuffer.h"
 
 class CameraGeometry {
 public:
@@ -115,7 +117,13 @@ public:
 
     const mat4& get_projection() const override {
         if (!is_valid_projection) {
-            projection = glm::perspective(fov, aspect_ratio, _near, _far);
+            if (config::inverse_depth) {
+            projection =
+                compute_inverse_depth_inf_perspective(fov, aspect_ratio, _near);
+            } else {
+                projection = glm::perspective(fov, aspect_ratio, _near, _far);
+            }
+
             is_valid_projection = true;
         }
         return projection;
@@ -133,9 +141,18 @@ private:
 
 class CameraCanvas {
 public:
-    i32 width = 1920;
-    i32 height = 1200;
+    void clear() {
+        if (!framebuffer) {
+            return;
+        }
+
+        framebuffer->clear(color);
+    }
+
+    i32 width = 800;
+    i32 height = 600;
     Color color = Color(0.5f, 0.5f, 0.5f, 1.f);
+    Framebuffer* framebuffer = nullptr;
 };
 
 struct Camera {
