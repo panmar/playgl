@@ -136,7 +136,6 @@ public:
     i32 width = 1920;
     i32 height = 1200;
     Color color = Color(0.5f, 0.5f, 0.5f, 1.f);
-    // Texture
 };
 
 struct Camera {
