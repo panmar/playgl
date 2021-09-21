@@ -72,6 +72,10 @@ public:
     void bind() const {
         bind_lock = true;
 
+        if (config::multisampling) {
+            glEnable(GL_MULTISAMPLE);
+        }
+
         if (config::inverse_depth) {
             glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
         }
