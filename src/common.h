@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <assert.h>
+#include <chrono>
 #include <cstdint>
 #include <exception>
 #include <filesystem>

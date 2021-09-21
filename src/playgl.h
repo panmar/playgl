@@ -53,15 +53,7 @@ void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height);
 
 class PlayGlApp {
 public:
-    PlayGlApp(const char* window_title, u32 window_width, u32 window_height) {
-        config::window_title = window_title;
-        config::window_width = window_width;
-        config::window_height = window_height;
-    }
-
     void run() {
-        using namespace std::literals::chrono_literals;
-
         if (!startup()) {
             return;
         }
@@ -78,6 +70,7 @@ public:
         }
 
         while (!glfwWindowShouldClose(window)) {
+            auto frame_timer = Timer{};
             system.input.update();
             glfwPollEvents();
 
@@ -99,7 +92,8 @@ public:
                 glfwSetWindowShouldClose(window, true);
             }
 
-            std::this_thread::sleep_for(16ms);
+            std::this_thread::sleep_until(frame_timer.get_tick_time() +
+                                          config::frame_time);
         }
 
         shutdown();
@@ -233,7 +227,7 @@ inline void on_framebuffer_resize(GLFWwindow* window, i32 width, i32 height) {
 
 #ifdef PGL_DEFINE_MAIN
 int main() {
-    PlayGlApp app{"playgl", 1920, 1200};
+    PlayGlApp app;
     app.run();
     return 0;
 }

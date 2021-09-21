@@ -15,6 +15,10 @@ public:
         prev_tick = tick;
     }
 
+    const auto& get_tick_time() const {
+        return prev_tick;
+    }
+
     f32 elapsed_seconds = 0.f;
 
 private:
