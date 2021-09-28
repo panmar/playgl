@@ -7,7 +7,6 @@
 #include "common.h"
 #include "graphics/texture.h"
 #include "resource.h"
-#include "system_utils.h"
 
 class Shader : public LazyResource<u32> {
 public:

@@ -34,8 +34,6 @@ struct GridDesc {
 
     // NOTE(panmar): Should it persist across frames?
     DEBUG_DESC_PROPERTY_DEFAULT(GridDesc, bool, permanent, true) = false;
-    // NOTE(panmar): Should it use depth information when rendering?
-    DEBUG_DESC_PROPERTY_DEFAULT(GridDesc, bool, depth, true) = false;
 };
 
 struct GizmoDesc {
@@ -44,13 +42,11 @@ struct GizmoDesc {
     DEBUG_DESC_PROPERTY(GizmoDesc, vec3, position) = vec3(0.f);
     DEBUG_DESC_PROPERTY(GizmoDesc, mat4, transform) = mat4(1.f);
     DEBUG_DESC_PROPERTY_DEFAULT(GizmoDesc, bool, permanent, true) = false;
-    DEBUG_DESC_PROPERTY_DEFAULT(GizmoDesc, bool, depth, true) = false;
 };
 
 struct ModelDesc {
     ModelDesc(const string& model_id) : model_id(model_id) {}
     DEBUG_DESC_PROPERTY_DEFAULT(ModelDesc, bool, permanent, true) = false;
-    DEBUG_DESC_PROPERTY_DEFAULT(ModelDesc, bool, depth, true) = false;
 
     string model_id;
 };
@@ -87,6 +83,8 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, config::window_width, config::window_height);
 
+        glClear(GL_DEPTH_BUFFER_BIT);
+
         render_grids(camera);
         render_gizmos(camera);
         render_models(camera);
@@ -117,7 +115,7 @@ private:
                            vec2(camera.canvas.width, camera.canvas.height))
                     .param("dash_size", 10.f)
                     .param("gap_size", 10.f),
-                GpuState().nodepth());
+                GpuState());
         }
     }
 
@@ -136,7 +134,7 @@ private:
                            vec2(camera.canvas.width, camera.canvas.height))
                     .param("dash_size", 10.f)
                     .param("gap_size", 10.f),
-                GpuState().nodepth());
+                GpuState());
         }
     }
 
@@ -153,7 +151,7 @@ private:
                         .param("view", camera.geometry.get_view())
                         .param("projection", camera.geometry.get_projection())
                         .param("color", Colors::Green),
-                    GpuState().wireframe().nodepth());
+                    GpuState().wireframe());
             }
         }
     }

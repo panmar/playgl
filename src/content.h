@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "system_utils.h"
 #include "graphics/model.h"
 #include "graphics/texture.h"
 #include "graphics/shader.h"

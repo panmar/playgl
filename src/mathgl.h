@@ -44,6 +44,10 @@ const Color Red = Color{1.f, 0.f, 0.f, 1.f};
 const Color Green = Color{0.f, 1.f, 0.f, 1.f};
 const Color Blue = Color{0.f, 0.f, 1.f, 1.f};
 
+inline Color random() {
+    return Color(::random(0.f, 1.f), ::random(0.f, 1.f), ::random(0.f, 1.f));
+}
+
 }  // namespace Colors
 
 inline mat4 compute_inverse_depth_inf_perspective(f32 fov, f32 aspect_ratio,
