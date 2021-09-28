@@ -17,7 +17,7 @@ cl /MD /std:c++17 ^
 	..\libs\imgui\imgui_draw.cpp ^
 	..\libs\imgui\imgui_impl_opengl3.cpp ^
 	..\libs\imgui\imgui_impl_glfw.cpp ^
-	kernel32.lib  shell32.lib user32.lib gdi32.lib comdlg32.lib glu32.lib glfw3.lib opengl32.lib assimp.lib^
+	kernel32.lib  shell32.lib user32.lib gdi32.lib comdlg32.lib glu32.lib glfw3.lib opengl32.lib ^
 	/link /LIBPATH:C:\work\projects\playgl\libs
 
 popd

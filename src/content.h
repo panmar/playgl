@@ -1,11 +1,10 @@
 #pragma once
 
 #include "common.h"
-#include "system.h"
-#include "model.h"
-#include "model_importer.h"
-#include "graphics/opengl/texture.h"
-#include "graphics/opengl/shader.h"
+#include "system_utils.h"
+#include "graphics/model.h"
+#include "graphics/texture.h"
+#include "graphics/shader.h"
 
 class Content {
 public:
@@ -21,11 +20,8 @@ public:
     Model& model(const string& id) {
         auto it = id_to_models.find(id);
         if (it != id_to_models.end()) {
-            return *(it->second.get());
+            return it->second;
         }
-
-        AssimpModelImporter importer;
-        auto model = std::make_unique<Model>();
 
         auto path_it =
             std::find_if(resource_filepaths.begin(), resource_filepaths.end(),
@@ -38,8 +34,9 @@ public:
             throw PlayGlException(error);
         }
 
-        model->data = importer.import(*path_it);
-        return *(id_to_models.insert({id, std::move(model)}).first->second.get());
+        return id_to_models
+            .insert({id, std::move(Model::from_file(*path_it))})
+            .first->second;
     }
 
     Shader& shader(const string& vs_id, const string& fs_id) {
@@ -103,7 +100,7 @@ public:
 private:
     vector<std::filesystem::path> resource_filepaths;
 
-    unordered_map<string, unique_ptr<Model>> id_to_models;
+    unordered_map<string, Model> id_to_models;
     unordered_map<string, Shader> id_to_shaders;
     unordered_map<string, Texture> id_to_textures;
 };

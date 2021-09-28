@@ -8,13 +8,11 @@
 
 #include "common.h"
 #include "config.h"
-#include "camera.h"
-#include "graphics.h"
+#include "graphics/graphics.h"
 #include "gui.h"
 #include "input.h"
 #include "store.h"
 #include "timer.h"
-#include "content.h"
 
 struct System {
     Timer timer;
@@ -26,7 +24,8 @@ struct System {
     OrbitCameraController camera_controller;
 
     GeometryRenderer geometry{store};
-    debug::DebugRenderer debug{geometry};
+    debug::DebugRenderer debug{content, geometry};
+
     FramebufferContainer framebuffers{content};
 
     Postprocess postprocess{content, geometry, framebuffers};
