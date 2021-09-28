@@ -8,7 +8,7 @@
 
 namespace Gui {
 
-bool startup(GLFWwindow* window) {
+inline bool startup(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -26,9 +26,68 @@ bool startup(GLFWwindow* window) {
     return true;
 }
 
-void update() {}
+inline void update() {}
 
-void render(Store& store) {
+inline void render_param_with_slider(const string& name, StoreParam& param) {
+    std::visit(
+        [&name, &param](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, i32>) {
+                ImGui::SliderInt(name.c_str(), &arg, param.min_bound,
+                                 param.max_bound);
+            } else if constexpr (std::is_same_v<T, f32>) {
+                ImGui::SliderFloat(name.c_str(), &arg, param.min_bound,
+                                   param.max_bound);
+            } else if constexpr (std::is_same_v<T, vec2>) {
+                ImGui::SliderFloat2(name.c_str(), &arg.x, param.min_bound,
+                                    param.max_bound);
+            } else if constexpr (std::is_same_v<T, vec3>) {
+                ImGui::SliderFloat3(name.c_str(), &arg.x, param.min_bound,
+                                    param.max_bound);
+            } else if constexpr (std::is_same_v<T, vec4>) {
+                ImGui::SliderFloat4(name.c_str(), &arg.x, param.min_bound,
+                                    param.max_bound);
+            } else if constexpr (std::is_same_v<T, Color>) {
+                ImGui::ColorEdit4(name.c_str(), arg.data);
+            } else if constexpr (std::is_same_v<T, mat4>) {
+                // NOTE(panmar): Not supported
+            } else if constexpr (std::is_same_v<T, string>) {
+                // NOTE(panmar): Not supported
+            } else {
+                static_assert(false);
+            }
+        },
+        param.param);
+}
+
+inline void render_param(const string& name, StoreParam& param) {
+    std::visit(
+        [&name](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, i32>) {
+                ImGui::InputInt(name.c_str(), &arg);
+            } else if constexpr (std::is_same_v<T, f32>) {
+                ImGui::InputFloat(name.c_str(), &arg);
+            } else if constexpr (std::is_same_v<T, vec2>) {
+                ImGui::InputFloat2(name.c_str(), &arg.x);
+            } else if constexpr (std::is_same_v<T, vec3>) {
+                ImGui::InputFloat3(name.c_str(), &arg.x);
+            } else if constexpr (std::is_same_v<T, vec4>) {
+                ImGui::InputFloat4(name.c_str(), &arg.x);
+            } else if constexpr (std::is_same_v<T, Color>) {
+                ImGui::ColorEdit4(name.c_str(), arg.data);
+            } else if constexpr (std::is_same_v<T, mat4>) {
+                // NOTE(panmar): Not supported
+            } else if constexpr (std::is_same_v<T, string>) {
+                // NOTE(panmar): Not supported
+            } else {
+                static_assert(false);
+            }
+        },
+        param.param);
+}
+
+inline void render(Store& store) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -40,30 +99,11 @@ void render(Store& store) {
             auto& name = key_value.first;
             auto& param = key_value.second;
             if (param.has(StoreParam::Gui)) {
-                std::visit(
-                    [&name](auto&& arg) {
-                        using T = std::decay_t<decltype(arg)>;
-                        if constexpr (std::is_same_v<T, i32>) {
-                            ImGui::InputInt(name.c_str(), &arg);
-                        } else if constexpr (std::is_same_v<T, f32>) {
-                            ImGui::InputFloat(name.c_str(), &arg);
-                        } else if constexpr (std::is_same_v<T, vec2>) {
-                            ImGui::InputFloat2(name.c_str(), &arg.x);
-                        } else if constexpr (std::is_same_v<T, vec3>) {
-                            ImGui::InputFloat3(name.c_str(), &arg.x);
-                        } else if constexpr (std::is_same_v<T, vec4>) {
-                            ImGui::InputFloat4(name.c_str(), &arg.x);
-                        } else if constexpr (std::is_same_v<T, Color>) {
-                            ImGui::ColorEdit4(name.c_str(), arg.data);
-                        } else if constexpr (std::is_same_v<T, mat4>) {
-                            // NOTE(panmar): Not supported
-                        } else if constexpr (std::is_same_v<T, string>) {
-                            // NOTE(panmar): Not supported
-                        } else {
-                            static_assert(false);
-                        }
-                    },
-                    param.param);
+                if (param.has(StoreParam::Bounded)) {
+                    render_param_with_slider(name, param);
+                } else {
+                    render_param(name, param);
+                }
             }
         }
 
@@ -75,7 +115,7 @@ void render(Store& store) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void shutdown() {
+inline void shutdown() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

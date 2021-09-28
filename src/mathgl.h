@@ -37,6 +37,7 @@ struct Color {
 };
 
 namespace Colors {
+
 const Color Black = Color{0.f, 0.f, 0.f, 1.f};
 const Color White = Color{1.f, 1.f, 1.f, 1.f};
 const Color Red = Color{1.f, 0.f, 0.f, 1.f};
