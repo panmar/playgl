@@ -5,18 +5,16 @@
 // NOTE(panmar): Lets use glm for now
 // In future it would be nice to have own math implementation
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_normalized_axis.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_SINGLE_ONLY
+#define GLM_FORCE_SWIZZLE
+#define GLM_FORCE_XYZW_ONLY
+//#define GLM_FORCE_LEFT_HANDED
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
 #include <glm/ext.hpp>
-#include <glm/gtx/compatibility.hpp>
+
+#include <glm/gtx/rotate_normalized_axis.hpp>
 
 using glm::mat2;
 using glm::mat3;
@@ -24,17 +22,6 @@ using glm::mat4;
 using glm::vec2;
 using glm::vec3;
 using glm::vec4;
-
-struct vec4u8 {
-    union {
-        struct {
-            u8 x, y, z, w;
-        };
-        u8 v[4];
-    };
-};
-
-// using Color = glm::vec4;
 
 struct Color {
     Color(f32 r, f32 g, f32 b, f32 a = 1.f) : r(r), g(g), b(b), a(a) {}
