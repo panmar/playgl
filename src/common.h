@@ -21,6 +21,8 @@
 #include <vector>
 #include <variant>
 
+#define STRINGIFY(str) #str
+
 using std::array;
 using std::map;
 using std::unordered_map;

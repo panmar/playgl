@@ -250,6 +250,22 @@ private:
         glDeleteShader(vs);
         glDeleteShader(fs);
 
+        auto compute_label = [](const Path& vs_path,
+                                const Path& fs_path) -> string {
+            if (vs_path.empty() || fs_path.empty()) {
+                return "";
+            }
+
+            if (vs_path.stem() == fs_path.stem()) {
+                return vs_path.stem().string();
+            }
+
+            return fmt::format("{}:{}", vs_path.stem().string(),
+                               fs_path.stem().string());
+        };
+
+        debug::label(compute_label(vs_path, fs_path), GL_PROGRAM, program);
+
         return program;
     };
 

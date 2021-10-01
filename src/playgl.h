@@ -87,15 +87,25 @@ public:
                 &system.framebuffers("#main").color().depth();
             system.camera.canvas.clear();
             pgl_render(system);
-            system.debug.render(system.camera);
 
-            system.postprocess(*system.camera.canvas.framebuffer)
-                .with("gamma_correction.fs")
-                .param("gamma", config::gamma)
-                .resulting("#gamma_corrected");
+            {
+                DEBUG_SCOPE("debug");
+                system.debug.render(system.camera);
+            }
 
-            system.framebuffers("#gamma_corrected").bind();
-            Gui::render(system.store);
+            {
+                DEBUG_SCOPE("gamma-correction");
+                system.postprocess(*system.camera.canvas.framebuffer)
+                    .with("gamma_correction.fs")
+                    .param("gamma", config::gamma)
+                    .resulting("#gamma_corrected");
+                system.framebuffers("#gamma_corrected").bind();
+            }
+
+            {
+                DEBUG_SCOPE("imgui");
+                Gui::render(system.store);
+            }
 
             system.framebuffers("#gamma_corrected").present();
 

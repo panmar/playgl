@@ -74,6 +74,8 @@ public:
             PlayGlException("Framebuffer is not complete!");
         }
 
+        debug::label(label, GL_FRAMEBUFFER, resource());
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         return *this;

@@ -13,9 +13,15 @@ inline void APIENTRY opengl_debug_callback(GLenum source, GLenum type, u32 id,
                                            const char* message,
                                            const void* user_param) {
     u32 ids_to_ignore[] = {131169, 131185, 131218, 131204};
-
     for (auto id_to_ignore : ids_to_ignore) {
         if (id == id_to_ignore) {
+            return;
+        }
+    }
+
+    u32 types_to_ignore[] = {GL_DEBUG_TYPE_PUSH_GROUP, GL_DEBUG_TYPE_POP_GROUP};
+    for (auto& type_to_ignore : types_to_ignore) {
+        if (type == type_to_ignore) {
             return;
         }
     }
@@ -102,6 +108,32 @@ inline void setup_logging() {
         glDebugMessageCallback(opengl_debug_callback, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
                               nullptr, GL_TRUE);
+    }
+}
+
+inline void scope_start(const char* name) {
+    if (glPushDebugGroup) {
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name);
+    }
+}
+
+inline void scope_end() {
+    if (glPopDebugGroup) {
+        glPopDebugGroup();
+    }
+}
+
+struct Scope {
+    Scope(const char* name) { scope_start(name); }
+    ~Scope() { scope_end(); }
+};
+
+#define DEBUG_SCOPE(name) \
+    debug::Scope scope { STRINGIFY(name) }
+
+inline void label(const string& name, u32 type, u32 resource) {
+    if (glObjectLabel && !name.empty()) {
+        glObjectLabel(type, resource, -1, name.c_str());
     }
 }
 

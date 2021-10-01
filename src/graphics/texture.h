@@ -22,9 +22,7 @@ struct TextureDesc {
     Filter min_filter = Filter::Linear;
     Filter max_filter = Filter::Linear;
 
-    f32 aspect_ratio() const {
-        return static_cast<f32>(width) / height;
-    }
+    f32 aspect_ratio() const { return static_cast<f32>(width) / height; }
 };
 
 class Texture : public LazyResource<u32> {
@@ -58,11 +56,19 @@ private:
         }
         u32 resource = create_texture_from_path(path);
 
-        i32 width = 0, height = 0;
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-        desc.width = width;
-        desc.height = height;
+        {
+            i32 width = 0, height = 0;
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH,
+                                     &width);
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT,
+                                     &height);
+            desc.width = width;
+            desc.height = height;
+        }
+
+        {
+            debug::label(path.filename().string(), GL_PROGRAM, resource);
+        }
 
         return resource;
     }
