@@ -7,6 +7,119 @@
 #include "common.h"
 #include "config.h"
 
+class GpuStateCache {
+public:
+    static void clear() {
+        enabled_flags().clear();
+        cache().clear();
+    }
+
+    static void glEnable(u32 flag) {
+        if (!enabled_flags().count(flag)) {
+            ::glEnable(flag);
+            enabled_flags().insert(flag);
+        }
+    }
+
+    static void glDisable(u32 flag) {
+        if (enabled_flags().count(flag)) {
+            ::glDisable(flag);
+            enabled_flags().erase(flag);
+        }
+    }
+
+    static void glClipControl(u32 arg1, u32 arg2) {
+        if (!check_and_set(CLIP_CONTROL, arg1, arg2)) {
+            ::glClipControl(arg1, arg2);
+        }
+    }
+
+    static void glBlendFunc(u32 arg1, u32 arg2) {
+        if (!check_and_set(BLEND_FUNC, arg1, arg2)) {
+            ::glBlendFunc(arg1, arg2);
+        }
+    }
+
+    static void glBlendEquation(u32 arg1) {
+        if (!check_and_set(BLEND_EQUATION, arg1)) {
+            ::glBlendEquation(arg1);
+        }
+    }
+
+    static void glDepthMask(u32 arg1) {
+        if (!check_and_set(DEPTH_MASK, arg1)) {
+            ::glDepthMask(arg1);
+        }
+    }
+
+    static void glDepthFunc(u32 arg1) {
+        if (!check_and_set(DEPTH_FUNC, arg1)) {
+            ::glDepthFunc(arg1);
+        }
+    }
+
+    static void glCullFace(u32 arg1) {
+        if (!check_and_set(CULL_FACE, arg1)) {
+            ::glCullFace(arg1);
+        }
+    }
+
+    static void glPolygonMode(u32 arg1, u32 arg2) {
+        if (!check_and_set(POLYGON_MODE, arg1, arg2)) {
+            ::glPolygonMode(arg1, arg2);
+        }
+    }
+
+    static void glBlendColor(f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
+        if (!check_and_set(POLYGON_MODE, arg1, arg2)) {
+            ::glBlendColor(arg1, arg2, arg3, arg4);
+        }
+    }
+
+private:
+    enum FuncType {
+        ENABLE,
+        CLIP_CONTROL,
+        BLEND_FUNC,
+        BLEND_EQUATION,
+        DEPTH_MASK,
+        DEPTH_FUNC,
+        CULL_FACE,
+        POLYGON_MODE
+    };
+
+    static unordered_set<u32>& enabled_flags() {
+        static unordered_set<u32> _enabled_flags;
+        return _enabled_flags;
+    }
+
+    using ArgType = std::variant<u32, f32>;
+    static unordered_map<u32, vector<ArgType>>& cache() {
+        static unordered_map<u32, vector<ArgType>> _cache;
+        return _cache;
+    };
+
+    template <class... ParamType>
+    static bool check_and_set(FuncType func_id, ParamType... params) {
+        vector<ArgType> p{params...};
+
+        auto it = cache().find(func_id);
+        if (it == cache().end()) {
+            cache().insert({func_id, p});
+            return false;
+        }
+
+        if (std::equal(it->second.begin(), it->second.end(), p.begin(),
+                       p.end())) {
+            return true;
+        }
+
+        cache().erase(func_id);
+        cache().insert({func_id, p});
+        return false;
+    }
+};
+
 class GpuState {
 public:
     enum class BlendMode {
@@ -81,48 +194,48 @@ public:
         bind_lock = true;
 
         if (config::multisampling) {
-            glEnable(GL_MULTISAMPLE);
+            GpuStateCache::glEnable(GL_MULTISAMPLE);
         }
 
         if (config::inverse_depth) {
-            glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+            GpuStateCache::glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
         }
 
         if (_blend) {
-            glEnable(GL_BLEND);
-            glBlendFunc(static_cast<i32>(_src_blend_mode),
-                        static_cast<i32>(_dst_blend_mode));
-            glBlendEquation(static_cast<i32>(_blend_equation));
-            glBlendColor(_blend_color.r, _blend_color.g, _blend_color.b,
-                         _blend_color.a);
+            GpuStateCache::glEnable(GL_BLEND);
+            GpuStateCache::glBlendFunc(static_cast<u32>(_src_blend_mode),
+                                       static_cast<u32>(_dst_blend_mode));
+            GpuStateCache::glBlendEquation(static_cast<u32>(_blend_equation));
+            GpuStateCache::glBlendColor(_blend_color.r, _blend_color.g,
+                                        _blend_color.b, _blend_color.a);
         } else {
-            glDisable(GL_BLEND);
+            GpuStateCache::glDisable(GL_BLEND);
         }
 
         if (_depth_test) {
-            glEnable(GL_DEPTH_TEST);
-            glDepthMask(_depth_write);
+            GpuStateCache::glEnable(GL_DEPTH_TEST);
+            GpuStateCache::glDepthMask(_depth_write);
 
             if (config::inverse_depth) {
-                glDepthFunc(GL_GREATER);
+                GpuStateCache::glDepthFunc(GL_GREATER);
             } else {
-                glDepthFunc(GL_LESS);
+                GpuStateCache::glDepthFunc(GL_LESS);
             }
         } else {
-            glDisable(GL_DEPTH_TEST);
+            GpuStateCache::glDisable(GL_DEPTH_TEST);
         }
 
         if (_cull_face) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(static_cast<i32>(_cull_face_mode));
+            GpuStateCache::glEnable(GL_CULL_FACE);
+            GpuStateCache::glCullFace(static_cast<i32>(_cull_face_mode));
         } else {
-            glDisable(GL_CULL_FACE);
+            GpuStateCache::glDisable(GL_CULL_FACE);
         }
 
         if (_wireframe) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            GpuStateCache::glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         } else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            GpuStateCache::glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
 

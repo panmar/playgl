@@ -1,7 +1,5 @@
 #pragma once
 
-#include <variant>
-
 #include "common.h"
 
 template <class T>

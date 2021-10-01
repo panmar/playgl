@@ -26,8 +26,6 @@ inline bool startup(GLFWwindow* window) {
     return true;
 }
 
-inline void update() {}
-
 inline void render_param_with_slider(const string& name, StoreParam& param) {
     std::visit(
         [&name, &param](auto&& arg) {

@@ -78,8 +78,10 @@ public:
             system.camera_controller.update(system.camera, system.input);
 
             pgl_update(system);
-            Gui::update();
 
+            // NOTE(panmar): Not sure if I need to clear the cache here;
+            // ImGui seems to clean after itself
+            // GpuStateCache::clear();
             system.debug.clear();
             system.camera.canvas.framebuffer =
                 &system.framebuffers("#main").color().depth();
