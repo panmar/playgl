@@ -76,6 +76,12 @@ public:
         }
     }
 
+    static void glViewport(f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
+        if (!check_and_set(VIEWPORT, arg1, arg2)) {
+            ::glViewport(arg1, arg2, arg3, arg4);
+        }
+    }
+
 private:
     enum FuncType {
         ENABLE,
@@ -85,7 +91,8 @@ private:
         DEPTH_MASK,
         DEPTH_FUNC,
         CULL_FACE,
-        POLYGON_MODE
+        POLYGON_MODE,
+        VIEWPORT
     };
 
     static unordered_set<u32>& enabled_flags() {

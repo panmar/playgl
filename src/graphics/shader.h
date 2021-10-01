@@ -199,7 +199,7 @@ public:
     }
 
     void unbind() const {
-        glUseProgram(0);
+        // glUseProgram(0);
         bound = false;
     }
 

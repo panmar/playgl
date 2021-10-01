@@ -72,6 +72,8 @@ public:
     }
 
     void texture(const Texture& texture) {
+        DEBUG_SCOPE("debug - texture render");
+
         if (debug_textures_drawn >= MAX_DEBUG_TEXTURES) {
             throw PlayGlException("Too many debug textures.");
         }
@@ -102,8 +104,8 @@ public:
         ++debug_textures_drawn;
 
         glBindFramebuffer(GL_FRAMEBUFFER, active_framebuffer);
-        glViewport(viewport_desc[0], viewport_desc[1], viewport_desc[2],
-                   viewport_desc[3]);
+        GpuStateCache::glViewport(viewport_desc[0], viewport_desc[1],
+                                  viewport_desc[2], viewport_desc[3]);
     }
 
     static mat4 create_transform(f32 x, f32 y, f32 width, f32 height,

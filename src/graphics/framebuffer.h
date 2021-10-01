@@ -75,6 +75,8 @@ public:
         }
 
         debug::label(label, GL_FRAMEBUFFER, resource());
+        debug::label(fmt::format("{}_color", label), GL_TEXTURE,
+                     color_texture.value().resource());
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -103,6 +105,10 @@ public:
             PlayGlException("Framebuffer is not complete!");
         }
 
+        debug::label(label, GL_FRAMEBUFFER, resource());
+        debug::label(fmt::format("{}_depth", label), GL_TEXTURE,
+                     depth_texture.value().resource());
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return *this;
     }
@@ -110,8 +116,8 @@ public:
     void bind() const {
         if (resource()) {
             glBindFramebuffer(GL_FRAMEBUFFER, resource());
-            glViewport(0, 0, color_texture.value().desc.width,
-                       color_texture.value().desc.height);
+            GpuStateCache::glViewport(0, 0, color_texture.value().desc.width,
+                                      color_texture.value().desc.height);
         }
     }
 

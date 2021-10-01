@@ -82,11 +82,22 @@ public:
             // NOTE(panmar): Not sure if I need to clear the cache here;
             // ImGui seems to clean after itself
             // GpuStateCache::clear();
-            system.debug.clear();
-            system.camera.canvas.framebuffer =
-                &system.framebuffers("#main").color().depth();
-            system.camera.canvas.clear();
-            pgl_render(system);
+            {
+                DEBUG_SCOPE("debug-clear");
+                system.debug.clear();
+            }
+
+            {
+                DEBUG_SCOPE("camera-clear");
+                system.camera.canvas.framebuffer =
+                    &system.framebuffers("#main").color().depth();
+                system.camera.canvas.clear();
+            }
+
+            {
+                DEBUG_SCOPE("pgl_render");
+                pgl_render(system);
+            }
 
             {
                 DEBUG_SCOPE("debug");
@@ -107,7 +118,10 @@ public:
                 Gui::render(system.store);
             }
 
-            system.framebuffers("#gamma_corrected").present();
+            {
+                DEBUG_SCOPE("present");
+                system.framebuffers("#gamma_corrected").present();
+            }
 
             glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);

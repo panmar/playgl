@@ -48,6 +48,8 @@ public:
     }
 
     void resulting(Framebuffer& framebuffer) {
+        DEBUG_SCOPE("postprocess");
+
         if (input_framebuffers.empty()) {
             throw PlayGlException(
                 "Postprocess: missing `framebuffer` argument");
@@ -91,9 +93,7 @@ private:
 
     Framebuffer* convert(const string& id) { return &framebuffers(id); }
 
-    Framebuffer* convert(Framebuffer& framebuffer) {
-        return &framebuffer;
-    }
+    Framebuffer* convert(Framebuffer& framebuffer) { return &framebuffer; }
 
     Content& content;
     GeometryRenderer& geometry_renderer;

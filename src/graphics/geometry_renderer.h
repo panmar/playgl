@@ -195,6 +195,8 @@ public:
 
     void render(const Geometry& geometry, const Shader& shader,
                 const GpuState& state = GpuState()) {
+        DEBUG_SCOPE("geometry render");
+
         auto& gpu_buffer = hashed_gpubuffers.get(geometry, shader);
 
         gpu_buffer.bind();
