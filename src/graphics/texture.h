@@ -71,8 +71,9 @@ private:
         unique_ptr<u8, decltype(&image_data_deleter)> buffer{
             stbi_load(path.string().c_str(), &width, &height, &channels, 0),
             image_data_deleter};
+        auto format = (channels == 3) ? GL_SRGB : GL_SRGB_ALPHA;
         if (buffer) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGB,
                          GL_UNSIGNED_BYTE, buffer.get());
             glGenerateMipmap(GL_TEXTURE_2D);
         } else {
