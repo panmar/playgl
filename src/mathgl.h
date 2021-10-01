@@ -48,6 +48,16 @@ inline Color random() {
     return Color(::random(0.f, 1.f), ::random(0.f, 1.f), ::random(0.f, 1.f));
 }
 
+inline Color to_linear(const Color& color, f32 gamma) {
+    return Color(pow(color.r, gamma), pow(color.g, gamma), pow(color.b, gamma),
+                 color.a);
+}
+
+inline Color gamma_corrected(const Color& color, f32 gamma) {
+    return Color(pow(color.r, 1.f / gamma), pow(color.g, 1.f / gamma),
+                 pow(color.b, 1.f / gamma), color.a);
+}
+
 }  // namespace Colors
 
 inline mat4 compute_inverse_depth_inf_perspective(f32 fov, f32 aspect_ratio,

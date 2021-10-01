@@ -172,6 +172,13 @@ public:
         if (hashed_buffers.count(hash)) {
             return hashed_buffers.find(hash)->second;
         } else {
+            // NOTE(panmar): Safety check - do our hashing works correctly?
+            constexpr auto MAX_HASHED_BUFFERS = 50;
+            if (hashed_buffers.size() > MAX_HASHED_BUFFERS) {
+                throw PlayGlException(
+                    "Maximum number of hashed buffers exceeded");
+            }
+
             auto gpu_buffer = GpuBuffer::from(geometry, shader);
             return hashed_buffers.insert({hash, std::move(gpu_buffer)})
                 .first->second;

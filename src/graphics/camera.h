@@ -118,8 +118,8 @@ public:
     const mat4& get_projection() const override {
         if (!is_valid_projection) {
             if (config::inverse_depth) {
-            projection =
-                compute_inverse_depth_inf_perspective(fov, aspect_ratio, _near);
+                projection = compute_inverse_depth_inf_perspective(
+                    fov, aspect_ratio, _near);
             } else {
                 projection = glm::perspective(fov, aspect_ratio, _near, _far);
             }

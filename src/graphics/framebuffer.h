@@ -9,27 +9,19 @@
 #include "graphics/texture.h"
 #include "content.h"
 
-class Framebuffer {
+class Framebuffer : public LazyResource<u32> {
 public:
     Framebuffer(Framebuffer&& other)
         : content(other.content),
-          framebuffer(other.framebuffer),
           color_texture(std::move(other.color_texture)),
-          depth_texture(std::move(other.depth_texture)) {
-        other.framebuffer = 0;
+          depth_texture(std::move(other.depth_texture)),
+          LazyResource(std::move(other)) {
         other.color_texture = std::nullopt;
         other.depth_texture = std::nullopt;
     }
 
-    Framebuffer(Content& content) : content(content) {
-        glGenFramebuffers(1, &framebuffer);
-    }
-
-    ~Framebuffer() {
-        if (framebuffer) {
-            glDeleteFramebuffers(1, &framebuffer);
-        }
-    }
+    Framebuffer(Content& content)
+        : content(content), LazyResource(resource_deleter) {}
 
     Framebuffer& clear(const Color& color = Colors::Black) {
         bind();
@@ -49,7 +41,7 @@ public:
 
     Framebuffer& present() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, resource());
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBlitFramebuffer(0, 0, color_texture.value().desc.width,
                           color_texture.value().desc.height, 0, 0,
@@ -61,7 +53,7 @@ public:
 
     Framebuffer& color(u32 width = config::window_width,
                        u32 height = config::window_height) {
-        if (!framebuffer) {
+        if (!resource()) {
             PlayGlException("No valid framebuffer found");
         }
 
@@ -70,8 +62,8 @@ public:
         }
 
         color_texture.emplace(Texture::from_desc(
-            TextureDesc{width, height, TextureDesc::Format::Srgb8_Alpha8}));
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+            TextureDesc{width, height, TextureDesc::Format::RGBA32F}));
+        glBindFramebuffer(GL_FRAMEBUFFER, resource());
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_2D, color_texture.value().resource(),
                                0);
@@ -88,7 +80,7 @@ public:
 
     Framebuffer& depth(u32 width = config::window_width,
                        u32 height = config::window_height) {
-        if (!framebuffer) {
+        if (!resource()) {
             PlayGlException("No valid framebuffer found");
         }
 
@@ -98,7 +90,7 @@ public:
 
         depth_texture.emplace(Texture::from_desc(
             TextureDesc{width, height, TextureDesc::Format::Depth32}));
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, resource());
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                GL_TEXTURE_2D, depth_texture.value().resource(),
                                0);
@@ -113,8 +105,8 @@ public:
     }
 
     void bind() const {
-        if (framebuffer) {
-            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        if (resource()) {
+            glBindFramebuffer(GL_FRAMEBUFFER, resource());
             glViewport(0, 0, color_texture.value().desc.width,
                        color_texture.value().desc.height);
         }
@@ -122,11 +114,23 @@ public:
 
     void unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
-    Content& content;
-
-    u32 framebuffer = 0;
     optional<Texture> color_texture;
     optional<Texture> depth_texture;
+
+private:
+    virtual u32 create_resource() const override {
+        auto result = 0U;
+        glGenFramebuffers(1, &result);
+        return result;
+    }
+
+    static void resource_deleter(u32& resource) {
+        if (resource) {
+            glDeleteFramebuffers(1, &resource);
+        }
+    }
+
+    Content& content;
 };
 
 class FramebufferContainer {

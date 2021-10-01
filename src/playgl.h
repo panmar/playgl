@@ -24,9 +24,9 @@ struct System {
     OrbitCameraController camera_controller;
 
     GeometryRenderer geometry{store};
-    debug::DebugRenderer debug{content, geometry};
-
     FramebufferContainer framebuffers{content};
+
+    debug::DebugRenderer debug{content, geometry, framebuffers("#__debug__")};
 
     Postprocess postprocess{content, geometry, framebuffers};
 };
@@ -80,9 +80,21 @@ public:
             pgl_update(system);
             Gui::update();
 
+            system.camera.canvas.framebuffer =
+                &system.framebuffers("#main").color().depth();
+            system.camera.canvas.clear();
             pgl_render(system);
             system.debug.render(system.camera);
+
+            system.postprocess(*system.camera.canvas.framebuffer)
+                .with("gamma_correction.fs")
+                .param("gamma", config::gamma)
+                .resulting("#gamma_corrected");
+
+            system.framebuffers("#gamma_corrected").bind();
             Gui::render(system.store);
+
+            system.framebuffers("#gamma_corrected").present();
 
             glfwMakeContextCurrent(window);
             glfwSwapBuffers(window);
@@ -143,7 +155,7 @@ private:
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
         pgl_init(system.store);
 

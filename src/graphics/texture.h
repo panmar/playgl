@@ -13,11 +13,12 @@
 #include "resource.h"
 
 struct TextureDesc {
-    enum class Format { Srgb8_Alpha8 = GL_SRGB8_ALPHA8, Depth32 };
+    enum class Format { RGBA8 = GL_RGBA8, RGBA32F = GL_RGBA32F, Depth32 };
     enum class Filter { Linear = GL_LINEAR };
+
     u32 width = 0;
     u32 height = 0;
-    Format format = Format::Srgb8_Alpha8;
+    Format format = Format::RGBA8;
     Filter min_filter = Filter::Linear;
     Filter max_filter = Filter::Linear;
 };
@@ -28,9 +29,9 @@ public:
 
     static Texture from_desc(const TextureDesc& desc) { return Texture{desc}; }
 
-    void bind() const {
+    void bind(u32 slot = 0) const {
         if (resource()) {
-            glActiveTexture(GL_TEXTURE0);
+            glActiveTexture(GL_TEXTURE0 + slot);
             glBindTexture(GL_TEXTURE_2D, resource());
         }
     }
@@ -89,9 +90,11 @@ private:
         glBindTexture(GL_TEXTURE_2D, texture);
 
         if (desc.format == TextureDesc::Format::Depth32) {
-            glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, desc.width, desc.height);
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, desc.width,
+                           desc.height);
         } else {
-            glTexStorage2D(GL_TEXTURE_2D, 1, GL_SRGB8_ALPHA8, desc.width, desc.height);
+            glTexStorage2D(GL_TEXTURE_2D, 1, static_cast<i32>(desc.format),
+                           desc.width, desc.height);
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,

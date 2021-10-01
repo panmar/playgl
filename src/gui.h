@@ -48,7 +48,11 @@ inline void render_param_with_slider(const string& name, StoreParam& param) {
                 ImGui::SliderFloat4(name.c_str(), &arg.x, param.min_bound,
                                     param.max_bound);
             } else if constexpr (std::is_same_v<T, Color>) {
-                ImGui::ColorEdit4(name.c_str(), arg.data);
+                // NOTE(panmar): A color picker needs to work on gamma corrected
+                // values. The store is storing colors in linear space.
+                Color color = Colors::gamma_corrected(arg, config::gamma);
+                ImGui::ColorEdit4(name.c_str(), color.data);
+                arg = Colors::to_linear(color, config::gamma);
             } else if constexpr (std::is_same_v<T, mat4>) {
                 // NOTE(panmar): Not supported
             } else if constexpr (std::is_same_v<T, string>) {
@@ -75,7 +79,11 @@ inline void render_param(const string& name, StoreParam& param) {
             } else if constexpr (std::is_same_v<T, vec4>) {
                 ImGui::InputFloat4(name.c_str(), &arg.x);
             } else if constexpr (std::is_same_v<T, Color>) {
-                ImGui::ColorEdit4(name.c_str(), arg.data);
+                // NOTE(panmar): A color picker needs to work on gamma corrected
+                // values. The store is storing colors in linear space.
+                Color color = Colors::gamma_corrected(arg, config::gamma);
+                ImGui::ColorEdit4(name.c_str(), color.data);
+                arg = Colors::to_linear(color, config::gamma);
             } else if constexpr (std::is_same_v<T, mat4>) {
                 // NOTE(panmar): Not supported
             } else if constexpr (std::is_same_v<T, string>) {

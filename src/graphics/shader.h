@@ -177,16 +177,23 @@ public:
                             vs_path.filename().string(),
                             fs_path.filename().string(), name));
         }
+
+        constexpr u32 MAX_SAMPELRS = 8;
+        if (current_sampler_slot > MAX_SAMPELRS) {
+            throw PlayGlException("Number of samplers exceeded");
+        }
+
         bind();
-        param(name, 0);
-        // TODO(panmar): Where is unbinding? It does not exist!
-        texture.bind();
+        texture.bind(current_sampler_slot);
+        param(name, static_cast<i32>(current_sampler_slot));
+        ++current_sampler_slot;
         return *this;
     }
 
     void bind() const {
         if (resource() && !bound) {
             glUseProgram(resource());
+            current_sampler_slot = 0;
             bound = true;
         }
     }
@@ -283,4 +290,5 @@ private:
     mutable string fs_text;
 
     mutable bool bound = false;
+    mutable u32 current_sampler_slot = 0;
 };

@@ -26,7 +26,10 @@ public:
           geometry_renderer(geometry_renderer),
           framebuffers(framebuffers) {}
 
-    Postprocess& operator()(const string& id) { return framebuffer(id); }
+    template <class... StringType>
+    Postprocess& operator()(StringType&... ids) {
+        return framebuffer({convert(ids)...});
+    }
 
     Postprocess& with(const string& fragment_shader_id) {
         shader = &content.shader("postprocess.vs", fragment_shader_id);
@@ -44,8 +47,8 @@ public:
         return *this;
     }
 
-    void resulting(const string& output_framebuffer_id) {
-        if (input_framebuffer_id.empty()) {
+    void resulting(Framebuffer& framebuffer) {
+        if (input_framebuffers.empty()) {
             throw PlayGlException(
                 "Postprocess: missing `framebuffer` argument");
         }
@@ -54,32 +57,48 @@ public:
             throw PlayGlException("Postprocess: missing `with` argument");
         }
 
-        framebuffers(output_framebuffer_id).color().bind();
+        framebuffer.color().bind();
 
-        geometry_renderer.render(
-            geometry::ScreenQuad{},
-            shader->param(
-                "tex",
-                framebuffers(input_framebuffer_id).color_texture.value()));
+        u32 i = 0;
+        for (auto& framebuffer : input_framebuffers) {
+            auto param_name = "tex" + std::to_string(i);
+            shader->param(param_name.c_str(),
+                          framebuffer->color_texture.value());
+            ++i;
+        }
+
+        geometry_renderer.render(geometry::ScreenQuad{},
+                                 shader->param("transform", mat4(1.f)),
+                                 GpuState().nodepth());
 
         command_cleanup();
     }
 
+    void resulting(const string& output_framebuffer_id) {
+        resulting(framebuffers(output_framebuffer_id));
+    }
+
 private:
-    Content& content;
-    GeometryRenderer& geometry_renderer;
-    FramebufferContainer& framebuffers;
-
-    string input_framebuffer_id;
-    Shader* shader = nullptr;
-
-    Postprocess& framebuffer(const string& id) {
-        input_framebuffer_id = id;
+    Postprocess& framebuffer(const vector<Framebuffer*>& framebuffers) {
+        input_framebuffers = framebuffers;
         return *this;
     }
 
     void command_cleanup() {
-        input_framebuffer_id = "";
+        input_framebuffers.clear();
         shader = nullptr;
     }
+
+    Framebuffer* convert(const string& id) { return &framebuffers(id); }
+
+    Framebuffer* convert(Framebuffer& framebuffer) {
+        return &framebuffer;
+    }
+
+    Content& content;
+    GeometryRenderer& geometry_renderer;
+    FramebufferContainer& framebuffers;
+
+    vector<Framebuffer*> input_framebuffers;
+    Shader* shader = nullptr;
 };
