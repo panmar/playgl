@@ -80,6 +80,7 @@ public:
             pgl_update(system);
             Gui::update();
 
+            system.debug.clear();
             system.camera.canvas.framebuffer =
                 &system.framebuffers("#main").color().depth();
             system.camera.canvas.clear();

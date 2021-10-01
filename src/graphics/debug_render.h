@@ -60,6 +60,11 @@ public:
           geometry_renderer(renderer),
           debug_layer(debug_layer) {}
 
+    void clear() {
+        debug_layer.color().depth().clear(Color(1.f, 1.f, 1.f, 0.f));
+        debug_textures_drawn = 0;
+    }
+
     GridDesc& grid() const { return grids.emplace_back(); }
     GizmoDesc& gizmo() const { return gizmos.emplace_back(); }
     ModelDesc& model(const string& model_id) const {
@@ -67,28 +72,48 @@ public:
     }
 
     void texture(const Texture& texture) {
+        if (debug_textures_drawn >= MAX_DEBUG_TEXTURES) {
+            throw PlayGlException("Too many debug textures.");
+        }
+
         auto active_framebuffer = 0;
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &active_framebuffer);
         i32 viewport_desc[4] = {0};
         glGetIntegerv(GL_VIEWPORT, viewport_desc);
 
         {
-            debug_layer.color().depth();
             debug_layer.bind();
-            debug_layer.clear(Color(1.f, 1.f, 1.f, 0.f));
+
+            auto height = debug_layer.color_texture.value().desc.height /
+                          MAX_DEBUG_TEXTURES;
+            auto width = height * texture.desc.aspect_ratio();
 
             geometry_renderer.render(
                 geometry::ScreenQuad(),
                 content.shader("postprocess.vs", "postprocess.fs")
                     .param("transform",
-                           glm::translate(vec3(-0.75f, -0.75f, 1.0f)) *
-                               glm::scale(vec3(0.25f)))
+                           create_transform(
+                               0, height * debug_textures_drawn, width, height,
+                               debug_layer.color_texture.value().desc.width,
+                               debug_layer.color_texture.value().desc.height))
                     .param("tex0", texture));
         }
+
+        ++debug_textures_drawn;
 
         glBindFramebuffer(GL_FRAMEBUFFER, active_framebuffer);
         glViewport(viewport_desc[0], viewport_desc[1], viewport_desc[2],
                    viewport_desc[3]);
+    }
+
+    static mat4 create_transform(f32 x, f32 y, f32 width, f32 height,
+                                 f32 screen_width, f32 screen_height) {
+        auto scale_width = 1.f * width / screen_width;
+        auto scale_height = 1.f * height / screen_height;
+        auto x_ndc = -1.f + 2.f * x / screen_width + (width / screen_width);
+        auto y_ndc = 1.f - 2.f * y / screen_height - (height / screen_height);
+        return glm::translate(vec3(x_ndc, y_ndc, 1.f)) *
+               glm::scale(vec3(scale_width, scale_height, 0.f));
     }
 
     void clear_ephemerals() {
@@ -126,6 +151,9 @@ private:
     mutable vector<GridDesc> grids;
     mutable vector<GizmoDesc> gizmos;
     mutable vector<ModelDesc> models;
+
+    u32 debug_textures_drawn = 0;
+    static constexpr u32 MAX_DEBUG_TEXTURES = 7;
 
     void render_grids(const Camera& camera) {
         for (auto& grid : grids) {

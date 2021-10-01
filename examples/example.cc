@@ -25,12 +25,20 @@ void pgl_render(System& system) {
     system.debug.model("test.glb");
     system.debug.texture(
         system.camera.canvas.framebuffer->color_texture.value());
+    system.debug.texture(
+        system.camera.canvas.framebuffer->color_texture.value());
+    system.debug.texture(
+        system.camera.canvas.framebuffer->color_texture.value());
+    system.debug.texture(
+        system.camera.canvas.framebuffer->color_texture.value());
+    system.debug.texture(
+        system.camera.canvas.framebuffer->color_texture.value());
 
-    // system.postprocess(*system.camera.canvas.framebuffer)
-    //     .with("grayscale.fs")
-    //     .resulting("#grayscale");
+    system.postprocess(*system.camera.canvas.framebuffer)
+        .with("grayscale.fs")
+        .resulting("#grayscale");
 
-    // system.postprocess("#grayscale")
-    //     .with("postprocess.fs")
-    //     .resulting(*system.camera.canvas.framebuffer);
+    system.postprocess("#grayscale")
+        .with("postprocess.fs")
+        .resulting(*system.camera.canvas.framebuffer);
 };

@@ -21,6 +21,10 @@ struct TextureDesc {
     Format format = Format::RGBA8;
     Filter min_filter = Filter::Linear;
     Filter max_filter = Filter::Linear;
+
+    f32 aspect_ratio() const {
+        return static_cast<f32>(width) / height;
+    }
 };
 
 class Texture : public LazyResource<u32> {
@@ -39,7 +43,7 @@ public:
     void unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 
     // NOTE(panmar): If the texture was created from desc it is stored here
-    const TextureDesc desc;
+    mutable TextureDesc desc;
 
 private:
     Texture(const Path& path)
@@ -52,7 +56,15 @@ private:
         if (path.empty()) {
             return create_texture_from_desc(desc);
         }
-        return create_texture_from_path(path);
+        u32 resource = create_texture_from_path(path);
+
+        i32 width = 0, height = 0;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+        desc.width = width;
+        desc.height = height;
+
+        return resource;
     }
 
     static u32 create_texture_from_path(const Path& path) {
