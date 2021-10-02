@@ -3,13 +3,13 @@ A playground for experimenting with OpenGL.
 
 <p align="center"><img src="example.jpg" alt="example" width="600"/></p>
 
-__Playgl__ is a C++ header-only library created for OpenGL prototyping (version 4.6-core).
-It is designed for quick testing of rendering techniques with main focus on the ease of use. It tries to abstract nitty-gritty details of gpu to allow user to focus on shaders workflow, while keeping abstraction lightweight. Currently it supports only Windows MSVC compiler (C++17). The library is still in early stage of development and it is bound to change rapidly.
+__Playgl__ is a C++ header-only library for OpenGL prototyping (version 4.6-core).
+It was created as an easy-to-use playground for rendering techniques. It tries to abstract nitty-gritty details of gpu to allow user to focus on shaders workflow. It tries to keep OpenGL lightweight to allow easy tinkering if one needs it. Currently it supports only Windows MSVC compiler (C++17). The library is still in early stage of development and it is bound to change.
 
 ## Features
-* Basic orbit camera support
-* Editable parameters with automatic GUI and shader binding
-* Built-in basic primitives support
+* Orbit camera support
+* Editable parameters with automatic GUI and shader propagation
+* Built-in primitives support
 * Debug renderer
 * Basic support for static models (gltf 2.0)
 * Basic support for textures (stb_image)
@@ -23,7 +23,7 @@ It is designed for quick testing of rendering techniques with main focus on the 
 * imgui
 * stb_image
 * par_shapes
-* picosha2
+* meow_hash
 * tinygltf
 * fmt
 
