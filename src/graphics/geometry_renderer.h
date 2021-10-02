@@ -193,23 +193,30 @@ class GeometryRendererCommand {
 public:
     GeometryRendererCommand(Content& content, Store& store,
                             GpuBufferHashmap& hashed_gpubuffers,
-                            const Geometry& _geometry)
+                            const Geometry& geometry)
         : content(content),
           store(store),
           hashed_gpubuffers(hashed_gpubuffers),
-          _geometry_ref(&_geometry) {
+          _geometry_ref(&geometry) {
         debug::scope_start("geometry:render");
     }
 
     GeometryRendererCommand(Content& content, Store& store,
                             GpuBufferHashmap& hashed_gpubuffers,
-                            Geometry&& _geometry)
+                            Geometry&& geometry)
         : content(content),
           store(store),
           hashed_gpubuffers(hashed_gpubuffers),
-          _geometry(std::move(_geometry)) {
+          _geometry(std::move(geometry)) {
         debug::scope_start("geometry:render");
     }
+
+    // NOTE(panmar): To support those operation we should add proper handling of
+    // debug-scope transfer
+    GeometryRendererCommand(const GeometryRendererCommand&) = delete;
+    GeometryRendererCommand(GeometryRendererCommand&&) = delete;
+    GeometryRendererCommand& operator=(const GeometryRendererCommand&) = delete;
+    GeometryRendererCommand& operator=(GeometryRendererCommand&&) = delete;
 
     ~GeometryRendererCommand() { debug::scope_end(); }
 
@@ -232,19 +239,13 @@ public:
         return *this;
     }
 
-    GeometryRendererCommand& state(const GpuState& state) {
-        _state_ref = &state;
-        return *this;
-    }
-
-    GeometryRendererCommand& state(GpuState&& state) {
-        _state = std::move(state);
+    GeometryRendererCommand& state(const GpuState& gpu_state) {
+        _state = gpu_state;
         return *this;
     }
 
     void render() {
         auto& geometry = get_geometry();
-        auto& state = get_state();
 
         if (!_shader) {
             throw PlayGlException("Shader not set");
@@ -255,7 +256,7 @@ public:
 
         _shader->bind();
         populate_shader_params_from_store(*_shader);
-        state.bind();
+        _state.bind();
 
         if (geometry.indices.empty()) {
             glDrawArrays(static_cast<i32>(geometry.topology), 0,
@@ -267,7 +268,7 @@ public:
 
         gpu_buffer.unbind();
         _shader->unbind();
-        state.unbind();
+        _state.unbind();
     }
 
 private:
@@ -311,13 +312,6 @@ private:
         return _geometry;
     }
 
-    const GpuState& get_state() {
-        if (_state_ref) {
-            return *_state_ref;
-        }
-        return _state;
-    }
-
     Content& content;
     Store& store;
     GpuBufferHashmap& hashed_gpubuffers;
@@ -327,7 +321,6 @@ private:
 
     Shader* _shader = nullptr;
 
-    const GpuState* _state_ref = nullptr;
     GpuState _state;
 };
 
