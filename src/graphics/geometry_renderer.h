@@ -4,7 +4,7 @@
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
-#include "picosha2.h"
+#include "meow_hash.h"
 
 #include "common.h"
 #include "graphics/geometry.h"
@@ -111,46 +111,48 @@ struct GpuBuffer {
         }
     }
 
-    static string generate_hash(const Geometry& geometry,
-                                const Shader& shader) {
-        picosha2::hash256_one_by_one hasher;
+    static u64 generate_hash(const Geometry& geometry, const Shader& shader) {
         static const string separator = "--#!@#!@#--";
+        meow_state state;
+        MeowBegin(&state, MeowDefaultSeed);
 
         if (!geometry.positions.empty() &&
             shader.has_attrib(Shader::INPUT_POSITION_ATTRIB)) {
-            hasher.process(
-                reinterpret_cast<const u8*>(&geometry.positions.begin()->x),
-                reinterpret_cast<const u8*>(&geometry.positions.end()->x));
+            MeowAbsorb(
+                &state,
+                geometry.positions.size() * sizeof(geometry.positions[0]),
+                (void*)(&geometry.positions.begin()->x));
         }
 
-        hasher.process(std::begin(separator), std::end(separator));
+        MeowAbsorb(&state, separator.size() * sizeof(std::string::value_type),
+                   (void*)(separator.c_str()));
 
         if (!geometry.normals.empty() &&
             shader.has_attrib(Shader::INPUT_NORMAL_ATTRIB)) {
-            hasher.process(
-                reinterpret_cast<const u8*>(&geometry.normals.begin()->x),
-                reinterpret_cast<const u8*>(&geometry.normals.end()->x));
+            MeowAbsorb(&state,
+                       geometry.normals.size() * sizeof(geometry.normals[0]),
+                       (void*)(&geometry.normals.begin()->x));
         }
 
-        hasher.process(std::begin(separator), std::end(separator));
+        MeowAbsorb(&state, separator.size() * sizeof(std::string::value_type),
+                   (void*)(separator.c_str()));
 
         if (!geometry.texcoords.empty() &&
             shader.has_attrib(Shader::INPUT_TEXCOORD_ATTRIB)) {
-            hasher.process(
-                reinterpret_cast<const u8*>(&geometry.texcoords.begin()->x),
-                reinterpret_cast<const u8*>(&geometry.texcoords.end()->x));
+            MeowAbsorb(
+                &state,
+                geometry.texcoords.size() * sizeof(geometry.texcoords[0]),
+                (void*)(&geometry.texcoords.begin()->x));
         }
 
         auto shader_source = shader.source();
-        hasher.process(shader_source.begin(), shader_source.end());
-        hasher.finish();
+        MeowAbsorb(&state,
+                   shader_source.size() * sizeof(std::string::value_type),
+                   (void*)(shader_source.c_str()));
 
-        std::vector<u8> hash(picosha2::k_digest_size);
-        hasher.get_hash_bytes(hash.begin(), hash.end());
-
-        std::string hex_str = picosha2::get_hash_hex_string(hasher);
-
-        return hex_str;
+        auto hash128 = MeowEnd(&state, nullptr);
+        auto hash64 = MeowU64From(hash128, 0);
+        return hash64;
     }
 
     void bind() {
@@ -186,7 +188,7 @@ public:
     }
 
 private:
-    unordered_map<string, GpuBuffer> hashed_buffers;
+    unordered_map<u64, GpuBuffer> hashed_buffers;
 };
 
 class GeometryRendererCommand {
