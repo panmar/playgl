@@ -90,15 +90,15 @@ public:
                           MAX_DEBUG_TEXTURES;
             auto width = height * texture.desc.aspect_ratio();
 
-            geometry_renderer.render(
-                geometry::ScreenQuad(),
-                content.shader("postprocess.vs", "postprocess.fs")
-                    .param("transform",
-                           create_transform(
-                               0, height * debug_textures_drawn, width, height,
-                               debug_layer.color_texture.value().desc.width,
-                               debug_layer.color_texture.value().desc.height))
-                    .param("tex0", texture));
+            geometry_renderer(geometry::ScreenQuad())
+                .shader("postprocess.vs", "postprocess.fs")
+                .param("transform",
+                       create_transform(
+                           0, height * debug_textures_drawn, width, height,
+                           debug_layer.color_texture.value().desc.width,
+                           debug_layer.color_texture.value().desc.height))
+                .param("tex0", texture)
+                .render();
         }
 
         ++debug_textures_drawn;
@@ -159,39 +159,36 @@ private:
 
     void render_grids(const Camera& camera) {
         for (auto& grid : grids) {
-            geometry_renderer.render(
-                geometry::Grid{},
-                content.shader("debug_dash.vs", "debug_dash.fs")
-                    .param("world", glm::translate(grid._position) *
-                                        glm::scale(vec3(grid._edge / 2.f)))
-
-                    .param("view", camera.geometry.get_view())
-                    .param("projection", camera.geometry.get_projection())
-                    .param("color", grid._color)
-                    .param("resolution",
-                           vec2(camera.canvas.width, camera.canvas.height))
-                    .param("dash_size", 10.f)
-                    .param("gap_size", 10.f),
-                GpuState());
+            geometry_renderer(geometry::Grid{})
+                .shader("debug_dash.vs", "debug_dash.fs")
+                .param("world", glm::translate(grid._position) *
+                                    glm::scale(vec3(grid._edge / 2.f)))
+                .param("view", camera.geometry.get_view())
+                .param("projection", camera.geometry.get_projection())
+                .param("color", grid._color)
+                .param("resolution",
+                       vec2(camera.canvas.width, camera.canvas.height))
+                .param("dash_size", 10.f)
+                .param("gap_size", 10.f)
+                .render();
         }
     }
 
     void render_gizmos(const Camera& camera) {
         for (auto& gizmo : gizmos) {
-            geometry_renderer.render(
-                geometry::Gizmo{},
-                content.shader("debug_dash.vs", "debug_dash.fs")
-                    .param("world",
-                           gizmo._transform * glm::translate(gizmo._position) *
-                               gizmo._rotation * glm::scale(gizmo._scale))
-                    .param("view", camera.geometry.get_view())
-                    .param("projection", camera.geometry.get_projection())
-                    .param("color", vec4(1.f, 0.f, 0.f, 1.f))
-                    .param("resolution",
-                           vec2(camera.canvas.width, camera.canvas.height))
-                    .param("dash_size", 10.f)
-                    .param("gap_size", 10.f),
-                GpuState());
+            geometry_renderer(geometry::Gizmo{})
+                .shader("debug_dash.vs", "debug_dash.fs")
+                .param("world", gizmo._transform *
+                                    glm::translate(gizmo._position) *
+                                    gizmo._rotation * glm::scale(gizmo._scale))
+                .param("view", camera.geometry.get_view())
+                .param("projection", camera.geometry.get_projection())
+                .param("color", vec4(1.f, 0.f, 0.f, 1.f))
+                .param("resolution",
+                       vec2(camera.canvas.width, camera.canvas.height))
+                .param("dash_size", 10.f)
+                .param("gap_size", 10.f)
+                .render();
         }
     }
 
@@ -201,27 +198,28 @@ private:
 
             auto model = content.model(model_desc.model_id).resource();
             for (auto& part : model.parts) {
-                geometry_renderer.render(
-                    part.geometry,
-                    content.shader("solid_color.vs", "solid_color.fs")
-                        .param("world", part.transform)
-                        .param("view", camera.geometry.get_view())
-                        .param("projection", camera.geometry.get_projection())
-                        .param("color", Colors::Green),
-                    GpuState().wireframe());
+                geometry_renderer(part.geometry)
+                    .shader("solid_color.vs", "solid_color.fs")
+                    .param("world", part.transform)
+                    .param("view", camera.geometry.get_view())
+                    .param("projection", camera.geometry.get_projection())
+                    .param("color", Colors::Green)
+                    .state(GpuState().wireframe())
+                    .render();
             }
         }
     }
 
     void render_to_camera(const Camera& camera) {
         camera.canvas.framebuffer->bind();
-        geometry_renderer.render(
-            geometry::ScreenQuad(),
-            content.shader("postprocess.vs", "postprocess.fs")
-                .param("transform", mat4(1.f))
-                .param("tex0", debug_layer.color_texture.value()),
-            GpuState().nodepth().blend(GpuState::BlendMode::SrcAlpha,
-                                       GpuState::BlendMode::OneMinusSrcAlpha));
+        geometry_renderer(geometry::ScreenQuad())
+            .shader("postprocess.vs", "postprocess.fs")
+            .param("transform", mat4(1.f))
+            .param("tex0", debug_layer.color_texture.value())
+            .state(GpuState().nodepth().blend(
+                GpuState::BlendMode::SrcAlpha,
+                GpuState::BlendMode::OneMinusSrcAlpha))
+            .render();
     }
 };
 

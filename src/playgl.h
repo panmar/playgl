@@ -23,7 +23,7 @@ struct System {
     Camera camera;
     OrbitCameraController camera_controller;
 
-    GeometryRenderer geometry{store};
+    GeometryRenderer geometry{content, store};
     FramebufferContainer framebuffers{content};
 
     debug::DebugRenderer debug{content, geometry, framebuffers("#__debug__")};

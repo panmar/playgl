@@ -14,12 +14,12 @@ void pgl_update(System& system) {
 };
 
 void pgl_render(System& system) {
-    system.geometry.render(
-        geometry::TrefoilKnot<>{},
-        system.content.shader("phong.vs", "phong.fs")
-            .param("world", mat4(1.f))
-            .param("view", system.camera.geometry.get_view())
-            .param("projection", system.camera.geometry.get_projection()));
+    system.geometry(geometry::TrefoilKnot<>{})
+        .shader("phong.vs", "phong.fs")
+        .param("world", mat4(1.f))
+        .param("view", system.camera.geometry.get_view())
+        .param("projection", system.camera.geometry.get_projection())
+        .render();
 
     system.debug.grid().edge(10.f);
     system.debug.model("test.glb");

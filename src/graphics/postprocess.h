@@ -69,9 +69,11 @@ public:
             ++i;
         }
 
-        geometry_renderer.render(geometry::ScreenQuad{},
-                                 shader->param("transform", mat4(1.f)),
-                                 GpuState().nodepth());
+        geometry_renderer(geometry::ScreenQuad{})
+            .shader(*shader)
+            .param("transform", mat4(1.f))
+            .state(GpuState().nodepth())
+            .render();
 
         command_cleanup();
     }

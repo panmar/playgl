@@ -189,19 +189,72 @@ private:
     unordered_map<string, GpuBuffer> hashed_buffers;
 };
 
-class GeometryRenderer {
+class GeometryRendererCommand {
 public:
-    GeometryRenderer(Store& store) : store(store) {}
+    GeometryRendererCommand(Content& content, Store& store,
+                            GpuBufferHashmap& hashed_gpubuffers,
+                            const Geometry& _geometry)
+        : content(content),
+          store(store),
+          hashed_gpubuffers(hashed_gpubuffers),
+          _geometry_ref(&_geometry) {
+        debug::scope_start("geometry:render");
+    }
 
-    void render(const Geometry& geometry, const Shader& shader,
-                const GpuState& state = GpuState()) {
-        DEBUG_SCOPE("geometry render");
+    GeometryRendererCommand(Content& content, Store& store,
+                            GpuBufferHashmap& hashed_gpubuffers,
+                            Geometry&& _geometry)
+        : content(content),
+          store(store),
+          hashed_gpubuffers(hashed_gpubuffers),
+          _geometry(std::move(_geometry)) {
+        debug::scope_start("geometry:render");
+    }
 
-        auto& gpu_buffer = hashed_gpubuffers.get(geometry, shader);
+    ~GeometryRendererCommand() { debug::scope_end(); }
 
+    GeometryRendererCommand& shader(const string& vs_id, const string& fs_id) {
+        _shader = &content.shader(vs_id, fs_id);
+        return *this;
+    }
+
+    GeometryRendererCommand& shader(Shader& shader_program) {
+        _shader = &shader_program;
+        return *this;
+    }
+
+    template <class ParamType>
+    GeometryRendererCommand& param(const char* name, const ParamType& param) {
+        if (!_shader) {
+            throw PlayGlException("Shader not set");
+        }
+        _shader->param(name, param);
+        return *this;
+    }
+
+    GeometryRendererCommand& state(const GpuState& state) {
+        _state_ref = &state;
+        return *this;
+    }
+
+    GeometryRendererCommand& state(GpuState&& state) {
+        _state = std::move(state);
+        return *this;
+    }
+
+    void render() {
+        auto& geometry = get_geometry();
+        auto& state = get_state();
+
+        if (!_shader) {
+            throw PlayGlException("Shader not set");
+        }
+
+        auto& gpu_buffer = hashed_gpubuffers.get(geometry, *_shader);
         gpu_buffer.bind();
-        shader.bind();
-        populate_shader_params_from_store(shader);
+
+        _shader->bind();
+        populate_shader_params_from_store(*_shader);
         state.bind();
 
         if (geometry.indices.empty()) {
@@ -213,7 +266,7 @@ public:
         }
 
         gpu_buffer.unbind();
-        shader.unbind();
+        _shader->unbind();
         state.unbind();
     }
 
@@ -251,6 +304,58 @@ private:
         }
     }
 
+    const Geometry& get_geometry() {
+        if (_geometry_ref) {
+            return *_geometry_ref;
+        }
+        return _geometry;
+    }
+
+    const GpuState& get_state() {
+        if (_state_ref) {
+            return *_state_ref;
+        }
+        return _state;
+    }
+
+    Content& content;
+    Store& store;
+    GpuBufferHashmap& hashed_gpubuffers;
+
+    const Geometry* _geometry_ref = nullptr;
+    Geometry _geometry;
+
+    Shader* _shader = nullptr;
+
+    const GpuState* _state_ref = nullptr;
+    GpuState _state;
+};
+
+class GeometryRenderer {
+public:
+    GeometryRenderer(Content& content, Store& store)
+        : content(content), store(store) {}
+
+    GeometryRendererCommand operator()(const Geometry& _geometry) {
+        return command(_geometry);
+    }
+
+    GeometryRendererCommand operator()(Geometry&& _geometry) {
+        return command(std::move(_geometry));
+    }
+
+private:
+    GeometryRendererCommand command(const Geometry& geometry) {
+        return GeometryRendererCommand(content, store, hashed_gpubuffers,
+                                       geometry);
+    }
+
+    GeometryRendererCommand command(Geometry&& geometry) {
+        return GeometryRendererCommand(content, store, hashed_gpubuffers,
+                                       std::move(geometry));
+    }
+
+    Content& content;
     Store& store;
     GpuBufferHashmap hashed_gpubuffers;
 };
