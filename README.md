@@ -4,11 +4,11 @@ A playground for experimenting with OpenGL.
 <p align="center"><img src="example.jpg" alt="example" width="600"/></p>
 
 __Playgl__ is a C++ header-only library created for OpenGL prototyping (version 4.6-core).
-It is designed for quick testing of rendering techniques with main focus on the ease of use. It tries to abstract nitty-gritty details of gpu to allow user to focus on shaders workflow while making abstraction lightweight and easy to modify. Currently it supports only Windows MSVC compiler (C++17). The library is still in early stage of development and it is bound to change rapidly.
+It is designed for quick testing of rendering techniques with main focus on the ease of use. It tries to abstract nitty-gritty details of gpu to allow user to focus on shaders workflow, while keeping abstraction lightweight. Currently it supports only Windows MSVC compiler (C++17). The library is still in early stage of development and it is bound to change rapidly.
 
 ## Features
-* Simple camera support
-* Editable parameters with automatic GUI and shader expose
+* Basic orbit camera support
+* Editable parameters with automatic GUI and shader binding
 * Built-in basic primitives support
 * Debug renderer
 * Basic support for static models (gltf 2.0)
