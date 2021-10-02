@@ -1,7 +1,7 @@
 # playgl
 A playground for experimenting with graphics
 
-<p align="center"><img src="example.jpg" alt="example" width="400"/></p>
+<p align="center"><img src="example.jpg" alt="example" width="600"/></p>
 
 Playgl is a header-only library created for OpenGL prototyping.
 
