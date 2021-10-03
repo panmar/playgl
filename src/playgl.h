@@ -20,11 +20,11 @@ struct System {
     Store store;
     Content content = Content(std::filesystem::path{"data/"});
 
-    Camera camera;
+    Camera camera{"main"};
     OrbitCameraController camera_controller;
 
     GeometryRenderer geometry{content, store};
-    FramebufferContainer framebuffers{content};
+    FramebufferContainer framebuffers;
 
     debug::DebugRenderer debug{content, geometry, framebuffers("#__debug__")};
 
@@ -89,8 +89,7 @@ public:
 
             {
                 DEBUG_SCOPE("camera-clear");
-                system.camera.canvas.framebuffer =
-                    &system.framebuffers("#main").color().depth();
+                system.camera.canvas.framebuffer.color().depth();
                 system.camera.canvas.clear();
             }
 
@@ -106,7 +105,7 @@ public:
 
             {
                 DEBUG_SCOPE("gamma-correction");
-                system.postprocess(*system.camera.canvas.framebuffer)
+                system.postprocess(system.camera.canvas.framebuffer)
                     .with("gamma_correction.fs")
                     .param("gamma", config::gamma)
                     .resulting("#gamma_corrected");

@@ -12,8 +12,7 @@
 class Framebuffer : public LazyResource<u32> {
 public:
     Framebuffer(Framebuffer&& other)
-        : content(other.content),
-          label(std::move(other.label)),
+        : label(std::move(other.label)),
           color_texture(std::move(other.color_texture)),
           depth_texture(std::move(other.depth_texture)),
           LazyResource(std::move(other)) {
@@ -21,8 +20,8 @@ public:
         other.depth_texture = std::nullopt;
     }
 
-    Framebuffer(Content& content, const string& label)
-        : content(content), label(label), LazyResource(resource_deleter) {}
+    Framebuffer(const string& label)
+        : label(label), LazyResource(resource_deleter) {}
 
     Framebuffer& clear(const Color& color = Colors::Black) {
         bind();
@@ -139,14 +138,11 @@ private:
         }
     }
 
-    Content& content;
     string label;
 };
 
 class FramebufferContainer {
 public:
-    FramebufferContainer(Content& content) : content(content) {}
-
     Framebuffer& operator()(const string& framebuffer_id) {
         return get(framebuffer_id);
     }
@@ -158,10 +154,9 @@ private:
         }
 
         return id_to_framebuffers
-            .insert({framebuffer_id, Framebuffer{content, framebuffer_id}})
+            .insert({framebuffer_id, Framebuffer{framebuffer_id}})
             .first->second;
     }
 
-    Content& content;
     unordered_map<string, Framebuffer> id_to_framebuffers;
 };

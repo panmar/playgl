@@ -211,7 +211,7 @@ private:
     }
 
     void render_to_camera(const Camera& camera) {
-        camera.canvas.framebuffer->bind();
+        camera.canvas.framebuffer.bind();
         geometry_renderer(geometry::ScreenQuad())
             .shader("postprocess.vs", "postprocess.fs")
             .param("transform", mat4(1.f))

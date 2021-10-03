@@ -141,21 +141,18 @@ private:
 
 class CameraCanvas {
 public:
-    void clear() {
-        if (!framebuffer) {
-            return;
-        }
-
-        framebuffer->clear(color);
-    }
+    CameraCanvas(const string& name) : framebuffer("#" + name) {}
+    void clear() { framebuffer.clear(color); }
 
     i32 width = 800;
     i32 height = 600;
     Color color = Color(0.5f, 0.5f, 0.5f, 1.f);
-    Framebuffer* framebuffer = nullptr;
+    // Framebuffer* framebuffer = nullptr;
+    Framebuffer framebuffer;
 };
 
 struct Camera {
+    Camera(const string& name) : canvas(name) {}
     CameraCanvas canvas;
     PerspectiveCamera geometry;
 };
