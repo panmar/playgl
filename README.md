@@ -37,6 +37,7 @@ void pgl_init(Store& store) {
     store["screen_color"] = Color(0.5f, 0.5f, 0.5);
     store["PHONG_COLOR"] = Color(0.7f, 0.4f, 0.3f);
     store["LIGHT_COLOR"] = Color(0.8f, 0.2f, 0.4f);
+
     store["test_bounded"] = BoundedParam(vec4(-1.f, 15.f, 32.f, -3.f), -5, 50);
 }
 
@@ -55,14 +56,14 @@ void pgl_render(System& system) {
     system.debug.grid().edge(10.f);
     system.debug.model("test.glb");
     system.debug.texture(
-        system.camera.canvas.framebuffer->color_texture.value());
+        system.camera.canvas.framebuffer.color_texture.value());
 
-    system.postprocess(*system.camera.canvas.framebuffer)
+    system.postprocess(system.camera.canvas.framebuffer)
         .with("grayscale.fs")
         .resulting("#grayscale");
 
     system.postprocess("#grayscale")
         .with("postprocess.fs")
-        .resulting(*system.camera.canvas.framebuffer);
+        .resulting(system.camera.canvas.framebuffer);
 };
 ```
