@@ -217,8 +217,9 @@ private:
 
     void shutdown() {
         Gui::shutdown();
-        glfwDestroyWindow(window);
-        glfwTerminate();
+        // TODO(panmar): Make sure children are cleaned first
+        // glfwDestroyWindow(window);
+        // glfwTerminate();
     }
 };
 
