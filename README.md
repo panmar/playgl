@@ -1,5 +1,5 @@
 # playgl
-A playground for experimenting with OpenGL.
+An OpenGL playground for experimenting with OpenGL.
 
 <p align="center"><img src="examples/example.jpg" alt="example" width="600"/></p>
 
